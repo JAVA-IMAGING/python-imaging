@@ -1,1 +1,0 @@
-# Update __all__ variable with every script in this directory

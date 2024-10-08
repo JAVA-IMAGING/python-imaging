@@ -1,10 +1,11 @@
-from module import dark_img as drk, flat_img as flt
 import sys
+
+from src.module import *  
+from src.util import *
 
 # code for main file goes here
 def main():
-    print(drk.darken())
-    print(flt.flatten())
+    pass
 
 # run main
 if __name__ == "__main__":

@@ -1,2 +1,0 @@
-def darken():
-    return "darken!"

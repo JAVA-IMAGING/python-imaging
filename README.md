@@ -33,3 +33,10 @@ List of packages used in this project can be found [here](./requirements.txt)
 3. Install required packages
 
     `pip install -r requirements.txt`
+
+4. Build project dependencies
+
+    `pip install -e .`
+
+    _This step fixes issues when sibling packages try to import from one another. \
+     Consider a project management tool in the future, but this should suffice for now._
