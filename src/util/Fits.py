@@ -6,7 +6,7 @@ import os
 Class to handle FITS files
 
 Current implementation opens FITS header upon initialization 
-to avoid repeated access which in turn improves performance, 
+to avoid repeated open() which in turn improves performance, 
 assuming memory is of no concern. Otherwise, change class to 
 implement lazy-loading.
 '''

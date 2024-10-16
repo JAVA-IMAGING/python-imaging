@@ -6,6 +6,7 @@ Create the master dark image from a list of FITS images
 @arg fits_file:     List of FITS objects to be median-stacked
 @arg output_file:   Path to where the output is going to be 
                     written
+@return:            Fits object
 '''
 def median_stack_fits(fits_files: list[Fits], output_file: str):
     # List to store data arrays from FITS files
