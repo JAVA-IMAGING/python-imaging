@@ -5,8 +5,7 @@ from src.util import *
 
 # code for main file goes here
 def main():
-    print(dark_img.darken())
-    print(flat_img.flatten())
+    pass
 
 # run main
 if __name__ == "__main__":
