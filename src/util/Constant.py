@@ -12,9 +12,8 @@ class Constant:
         TYPE_KEY = "TARGET"
     
 
-    '''
-    File path constatnts, leaving it here in case we ever use it
-    '''
+
+    # File path constatnts, leaving it here in case we ever use it
     DARK_PATH = r"resource/dark_images/"
     FLAT_PATH = r"resource/flat_images/"
     BIAS_PATH = r"resource/bias_images/"

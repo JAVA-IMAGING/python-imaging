@@ -1,14 +1,23 @@
 import numpy as np
 from src.util import *
 
-'''
-Create the master dark image from a list of FITS images
-@arg fits_file:     List of FITS objects to be median-stacked
-@arg output_file:   Path to where the output is going to be 
-                    written
-@return:            Fits object
-'''
 def median_stack_fits(fits_files: list[Fits], output_file: str):
+    '''
+    Create a median-stacked image from a list of FITS images
+
+    params
+    ------
+    fits_file: list[Fits]
+        List of FITS objects to be median-stacked
+    output_file: str
+        Path to where the output is going to be written
+
+    return
+    ------
+    Fits
+        Fits object
+    '''
+    
     # List to store data arrays from FITS files
     image_data = []
 
@@ -22,13 +31,23 @@ def median_stack_fits(fits_files: list[Fits], output_file: str):
     # Return new Fits object with the calculated data
     return Fits.create_fits(output_file, stacked_median)
 
-'''
-Subtract master dark from target FITS image
-@arg target_img:    Fits object of target image
-@arg dark_img:      Fits object of dark image
-@return:            new Fits object of resulting subtraction
-'''
 def subtract_dark(target_img: Fits, dark_img: Fits):
+    '''
+    Subtract master dark from target FITS image
+
+    params
+    ------
+    target_img: Fits
+        Fits object of target image
+    dark_img: Fits
+        Fits object of dark image
+
+    return
+    ------
+    Fits
+        new Fits object of resulting subtraction
+    '''
+
     dark_data = np.array(dark_img.get_data())
     target_data = np.array(target_img.get_data())
 
