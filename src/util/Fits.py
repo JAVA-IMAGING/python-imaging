@@ -32,10 +32,15 @@ class Fits:
     Create Fits object from given path
     @arg path:  String of file path to FITS file
     @arg hdu:   Optional HDU argument for creation of new FITS
+
+    TODO:       Handle the case when creating a new FITS object 
+                from a newly created FITS data is assigned to 
+                existing path. For now, just dont't be dumb and`
+                make sure the path is for its own.
     '''
     def fits_set(self, path: str, hdu: fits.PrimaryHDU = None):
         # if given path points to existing FITS file, open HDUL
-        if (self.path_check(path)):
+        if (self.path_check(path)) and not hdu:
             self.path = path
             self.hdul = fits.open(path)
         elif hdu:
@@ -67,9 +72,10 @@ class Fits:
     '''
     Write the current HDU list to a FITS file.
     @arg path:      Path to where FITS is to be written to
-    @arg overwrite: Flag to overwrite existing files
+    @arg overwrite: Flag to overwrite existing files, default 
+                    to True
     '''
-    def write_to_disk(self, overwrite: bool = False):
+    def write_to_disk(self, overwrite: bool = True):
         fits.writeto(filename=self.path, data=self.get_data(), header=self.hdul[0].header, overwrite=overwrite)
 
     '''
@@ -80,7 +86,7 @@ class Fits:
     @return Fits:   Creates a new Fits object with hdul and path
     '''
     @staticmethod
-    def create_fits(path: str, data: list, write: bool = False):
+    def create_fits(path: str, data: list):
         new_obj = Fits()
         new_obj.fits_set(path, fits.PrimaryHDU(data=data))
         return new_obj

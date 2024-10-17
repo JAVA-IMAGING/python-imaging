@@ -16,12 +16,27 @@ def test_Fits():
 
 # ngetes dark_img
 def test_dark_img():
-    fits_files = Fits.batch_fits(Constant.DARK_PATH, Constant.HeaderObj.DARK_IMG)
-    output_file = Constant.OUTPUT_PATH + "ngentot_gasih.fits" # or change this to a path
+    # CHECKING MAKING MASTER DARK
+    # fits_files = Fits.batch_fits(Constant.DARK_PATH, Constant.HeaderObj.DARK_IMG)
+    # output_file = Constant.OUTPUT_PATH + "ngentot_gasih.fits" # or change this to a path
 
-    master_dark = median_stack_fits(fits_files, output_file)
+    # make_dark = median_stack_fits(fits_files, output_file)
+    
     # tulis ke kaset
-    master_dark.write_to_disk(True)
+    # make_dark.write_to_disk()
+
+    # CHECKING SUBTRACT DARK
+    one = Fits(Constant.DARK_PATH + "dark_3_000_1681706713.fits")
+    two = Fits(r"c:\Users\bloon\Desktop\project-ctn-tcom-018-iit\java-imaging\src\test\fits\20181002_16.fits")
+    three = Fits(Constant.DARK_PATH + "dark_3_001_1681706376.fits")
+
+    result = subtract_dark(one, one)
+
+    print(result.path)
+    result.write_to_disk()
+    print(result.get_data())
+
+
 
 if __name__ == "__main__":
     # test_Fits()
