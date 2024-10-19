@@ -41,7 +41,13 @@ def test_generate_img():
     img_test = Fits(path)
     generate_img(img_test)
 
+def test_batch_load():
+    # path = Constant.RESOURCE_PATH + "fits/"
+    path = Constant.DARK_PATH
+    Fits.batch_fits(path, "dark")
+
 if __name__ == "__main__":
     # test_Fits()
     # test_dark_img()
-    test_generate_img()
+    # test_generate_img()
+    test_batch_load()

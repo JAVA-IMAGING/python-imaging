@@ -137,8 +137,15 @@ class Fits:
         str
             Image type as string
         '''
+
+        header = fits.open(path)[0].header
+
+        # Checks through list of "known" key values that stores the image type in the FITS file we handle
+        for key in Constant.HeaderObj.TYPE_KEY:
+            if header.get(key) is not None:
+                return header[key]
         
-        return fits.open(path)[0].header[Constant.HeaderObj.TYPE_KEY]
+        raise KeyError(f"Unable to find image type of {path}. Perhaps a different key is used to store the image type?")
 
     @staticmethod
     def path_check(path: str):
