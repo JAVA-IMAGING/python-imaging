@@ -47,16 +47,19 @@ class Fits:
         hdu: PrimaryHDU, optional
             Optional HDU argument for creation of new FITS
         '''
+    
+        # change windows path to linux, for consistency sake
+        format_path = path.replace("\\", "/")
         
         # if given path points to existing FITS file, open HDUL
-        if (self.path_check(path)) and not hdu:
-            self.path = path
-            self.hdul = fits.open(path)
+        if (self.path_check(format_path)) and not hdu:
+            self.path = format_path
+            self.hdul = fits.open(format_path)
         elif hdu:
-            self.path = path
+            self.path = format_path
             self.hdul = fits.HDUList([hdu])
         else:
-            raise FileNotFoundError(f"Provided path {path} is not a FITS file")
+            raise FileNotFoundError(f"Provided path {format_path} is not a FITS file")
 
     def fits_hdul_info(self):
         '''
@@ -182,7 +185,9 @@ class Fits:
                 # find FITS with specified type
                 if (Fits.path_check(path + files) and type == Fits.check_type(path + files)):
                     fits_list.append(Fits(path + files))
-           
+
+            print(f"Batch collect found {len(fits_list)} {type} files in {path}")
+
             return fits_list
         else:
             raise NotADirectoryError(f"Provided path {path} is not a directory")

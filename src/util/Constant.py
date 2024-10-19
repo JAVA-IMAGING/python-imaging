@@ -19,3 +19,4 @@ class Constant:
     BIAS_PATH = r"resource/bias_images/"
     SCIENCE_PATH = r"resource/science_images/"
     OUTPUT_PATH = r"resource/output/"
+    PNG_PATH = r"resource/output/image_png/"
