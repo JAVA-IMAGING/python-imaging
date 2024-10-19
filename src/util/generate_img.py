@@ -4,19 +4,33 @@ import numpy as np
 from src.util.Fits import *
 from src.util.Constant import *
 
-def generate_img(fits_img: Fits):
+def generate_img(fits_img: Fits, boost_factor: float = 1.0):
+    '''
+    Generate a PNG file from given Fits object and boosting the pixels
+
+    params
+    ------
+    fits_img: Fits
+        Fits object to be converted into PNG image
+    boost_factor: float, optional
+        Float value to boost the image's contrast
+    '''
     # path to save the image
     slash_idx = fits_img.path.rfind("/")
-    filename = fits_img.path[slash_idx + 1:-5]  # this just grabs only the filename from the complete path 
+    filename = fits_img.path[slash_idx + 1:-5]  # this grabs only the filename from the complete path 
     path = Constant.PNG_PATH + filename + ".png"
 
-    # get data from FITS image, assign NaN to 0
-    fits_data = np.nan_to_num(fits_img.get_data(), nan=0)
+    # get data from FITS image
+    fits_data = np.array(fits_img.get_data())
+
     max_val = np.max(fits_data)
     min_val = np.min(fits_data)
 
-    # scaling data to 8 bits
-    scaled_data = (fits_data - min_val) / (max_val - min_val) * 255
+    # scaling data to 8 bits and perform linear contrast stretching
+    scaled_data = (fits_data - min_val) / (max_val - min_val) * 255 * boost_factor
+
+    # clip to valid range after boosting
+    scaled_data = np.clip(scaled_data, 0, 255)
 
     # convert to 8-bit unsigned integer
     scaled_data = scaled_data.astype(np.uint8)

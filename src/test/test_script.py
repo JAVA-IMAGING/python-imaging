@@ -42,9 +42,25 @@ def test_generate_img():
     generate_img(img_test)
 
 def test_batch_load():
-    # path = Constant.RESOURCE_PATH + "fits/"
-    path = Constant.DARK_PATH
-    Fits.batch_fits(path, "dark")
+    path1 = Constant.RESOURCE_PATH + "fits/"
+    path2 = Constant.DARK_PATH
+    path3 = Constant.RESOURCE_PATH + "fits/"
+
+    '''
+    collect_dark = Fits.batch_fits(path1, "dark")
+    master_dark = median_stack_fits(collect_dark, Constant.OUTPUT_PATH + "master_dark.fits")
+    generate_img(master_dark, 150)
+    '''
+
+    '''
+    collect_flat = Fits.batch_fits(path3, "flat")
+    master_flat = median_stack_fits(collect_flat, Constant.OUTPUT_PATH + "master_flat.fits")
+    generate_img(master_flat)
+    '''
+
+    # this is from the SD card
+    science_img = Fits(r"E:\IPRO Images\2023-05-23_04-03-47_observation_M101\01-images-initial\img-0002r.fits")
+    generate_img(science_img, 3)
 
 if __name__ == "__main__":
     # test_Fits()

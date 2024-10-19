@@ -48,7 +48,7 @@ class Fits:
             Optional HDU argument for creation of new FITS
         '''
     
-        # change windows path to linux, for consistency sake
+        # change windows path to POSIX, for consistency sake
         format_path = path.replace("\\", "/")
         
         # if given path points to existing FITS file, open HDUL
@@ -99,6 +99,7 @@ class Fits:
         '''
 
         fits.writeto(filename=self.path, data=self.get_data(), header=self.hdul[0].header, overwrite=overwrite)
+        print(f"FITS file succesfully written to {self.path}")
 
     @staticmethod
     def create_fits(path: str, data: list):
