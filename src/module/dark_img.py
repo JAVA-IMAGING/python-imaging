@@ -59,6 +59,7 @@ def subtract_dark(target_img: Fits, dark_img: Fits):
         raise BaseException(f"Different image dimensons!\ndark image dimension: {dark_dimension}\ntarget image dimension: {target_dimension}")
     
     target_data = np.subtract(target_data, dark_data)
+    
     # the new file will have the same path and named with "_subdark" at the end of it
     new_path = target_img.path[:len(target_img.path)-5] + "_subdark" + target_img.path[len(target_img.path)-5:] 
 

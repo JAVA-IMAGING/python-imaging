@@ -47,16 +47,19 @@ class Fits:
         hdu: PrimaryHDU, optional
             Optional HDU argument for creation of new FITS
         '''
+    
+        # change windows path to POSIX, for consistency sake
+        format_path = path.replace("\\", "/")
         
         # if given path points to existing FITS file, open HDUL
-        if (self.path_check(path)) and not hdu:
-            self.path = path
-            self.hdul = fits.open(path)
+        if (self.path_check(format_path)) and not hdu:
+            self.path = format_path
+            self.hdul = fits.open(format_path)
         elif hdu:
-            self.path = path
+            self.path = format_path
             self.hdul = fits.HDUList([hdu])
         else:
-            raise FileNotFoundError(f"Provided path {path} is not a FITS file")
+            raise FileNotFoundError(f"Provided path {format_path} is not a FITS file")
 
     def fits_hdul_info(self):
         '''
@@ -96,6 +99,7 @@ class Fits:
         '''
 
         fits.writeto(filename=self.path, data=self.get_data(), header=self.hdul[0].header, overwrite=overwrite)
+        print(f"FITS file succesfully written to {self.path}")
 
     @staticmethod
     def create_fits(path: str, data: list):
@@ -134,8 +138,15 @@ class Fits:
         str
             Image type as string
         '''
+
+        header = fits.open(path)[0].header
+
+        # Checks through list of "known" key values that stores the image type in the FITS file we handle
+        for key in Constant.HeaderObj.TYPE_KEY:
+            if header.get(key) is not None:
+                return header[key]
         
-        return fits.open(path)[0].header[Constant.HeaderObj.TYPE_KEY]
+        raise KeyError(f"Unable to find image type of {path}. Perhaps a different key is used to store the image type?")
 
     @staticmethod
     def path_check(path: str):
@@ -182,7 +193,9 @@ class Fits:
                 # find FITS with specified type
                 if (Fits.path_check(path + files) and type == Fits.check_type(path + files)):
                     fits_list.append(Fits(path + files))
-           
+
+            print(f"Batch collect found {len(fits_list)} {type} files in {path}")
+
             return fits_list
         else:
             raise NotADirectoryError(f"Provided path {path} is not a directory")
