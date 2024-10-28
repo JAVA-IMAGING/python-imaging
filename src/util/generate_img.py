@@ -1,4 +1,5 @@
 from PIL import Image
+import cv2 # switching from Pillow to cv2
 import numpy as np
 
 from src.util.Fits import *
