@@ -4,6 +4,8 @@ import numpy as np
 from src.util.Fits import *
 from src.util.Constant import *
 
+# TODO: This implementation is not accurate. It is better to be given the 
+#       separate channels as arguments to ensure that the datas are correct
 def generate_img(fits_img: Fits, boost_factor: float = 1.0):
     '''
     Generate a PNG file from given Fits object and boosting the pixels
@@ -15,6 +17,7 @@ def generate_img(fits_img: Fits, boost_factor: float = 1.0):
     boost_factor: float, optional
         Float value to boost the image's contrast
     '''
+    
     # path to save the image
     slash_idx = fits_img.path.rfind("/")
     filename = fits_img.path[slash_idx + 1:-5]  # this grabs only the filename from the complete path 

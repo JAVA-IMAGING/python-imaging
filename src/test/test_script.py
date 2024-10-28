@@ -30,7 +30,7 @@ def test_dark_img():
     two = Fits(r"c:\Users\bloon\Desktop\project-ctn-tcom-018-iit\java-imaging\src\test\fits\20181002_16.fits")
     three = Fits(Constant.DARK_PATH + "dark_3_001_1681706376.fits")
 
-    result = subtract_dark(one, one)
+    result = subtract_fits(one, one)
 
     print(result.path)
     result.write_to_disk()
@@ -59,11 +59,58 @@ def test_batch_load():
     '''
 
     # this is from the SD card
-    science_img = Fits(r"E:\IPRO Images\2023-05-23_04-03-47_observation_M101\01-images-initial\img-0002r.fits")
-    generate_img(science_img, 3)
+    test_dir = Fits.batch_fits(r"E:/IPRO Images/expert-mode/dark-25C/no_flip/")
+
+def test_actual_processing():
+    path = Constant.RESOURCE_PATH + "fits/"
+    output = Constant.OUTPUT_PATH + "master_dark_test.fits"
+    dark_lists = Fits.batch_fits(path, Constant.HeaderObj.DARK_IMG)
+
+    master_dark = median_stack_fits(dark_lists, output)
+
+    target_img = Fits(r"C:\Users\bloon\Desktop\python-imaging\resource\fits\20181005_39.fits")
+    subtracted_image = subtract_fits(target_img, master_dark)
+
+    print(master_dark.get_data())
+
+    # bandingin cok
+    # generate_img(target_img)
+    # generate_img(subtracted_image)
+    # generate_img(master_dark)
+
+def test_teddy():
+    # dark_list = Fits.batch_fits(r"E:/IPRO Images/expert-mode/dark-25C/no_flip/")
+
+    # master_dark_path = Constant.DARK_PATH + "master_dark.fits"
+    # master_dark = median_stack_fits(dark_list, master_dark_path)
+    # print(f"master dark data:\n{master_dark.get_data()}\n")
+
+    # target_img = Fits(r"E:\IPRO Images\2023-05-23_04-03-47_observation_M101\01-images-initial\img-0002r.fits")
+    # print(f"target image data:\n{target_img.get_data()}\n")
+    # target_img.fits_hdul_info()
+    # generate_img(target_img)
+
+    # target_subdark = dark_img.subtract_fits(target_img, master_dark, Constant.OUTPUT_PATH)
+    # print(f"subtracted data:\n{target_subdark.get_data()}\n")
+
+    # target_subdark.write_to_disk()
+    # generate_img(target_subdark)
+
+    path = Constant.RESOURCE_PATH + "fits/"
+    dark_list = Fits.batch_fits(path, Constant.HeaderObj.DARK_IMG)
+
+    mean_dark = mean_stack_fits(dark_list, Constant.DARK_PATH + "mean_dark.fits")
+    median_dark = median_stack_fits(dark_list, Constant.DARK_PATH + "median_dark.fits")
+
+    generate_img(mean_dark, 100)
+    generate_img(median_dark, 100)
+
+    pass
 
 if __name__ == "__main__":
     # test_Fits()
     # test_dark_img()
     # test_generate_img()
-    test_batch_load()
+    # test_batch_load()
+    # test_actual_processing()
+    test_teddy()

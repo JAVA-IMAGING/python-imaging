@@ -31,7 +31,43 @@ def median_stack_fits(fits_files: list[Fits], output_file: str):
     # Return new Fits object with the calculated data
     return Fits.create_fits(output_file, stacked_median)
 
-def subtract_dark(target_img: Fits, dark_img: Fits):
+# TODO: do the mean stack they did
+def mean_stack_fits(fits_files: list[Fits], output_file: str):
+    '''
+    Create a mean-stacked image from a list of FITS images
+
+    params
+    ------
+    fits_file: list[Fits]
+        List of FITS objects to be median-stacked
+    output_file: str
+        Path to where the output is going to be written
+
+    return
+    ------
+    Fits
+        Fits object
+    '''
+
+    # List to store data arrays from FITS files
+    image_data = []
+    dark_image = []
+
+    # Read each FITS file and append the data to the list
+    for file in fits_files:
+        image_data.append(file.get_data())
+
+    stdev = np.std(np.array(image_data), axis=0)
+    mean = np.mean(np.array(image_data), axis=0)
+
+    # Create a mask to filter out outliers, and average the values that are left
+    mask = np.abs(image_data - mean) <= 1.5 * stdev     # formula taken from Swift team's code
+    masked_data = np.where(mask, image_data, np.nan)    # this was what Elaine meant by using mask
+    mean_masked = np.nanmean(masked_data, axis=0)
+
+    return Fits.create_fits(output_file, mean_masked)
+
+def subtract_fits(target_img: Fits, dark_img: Fits, output_path: str = None):
     '''
     Subtract master dark from target FITS image
 
@@ -41,6 +77,8 @@ def subtract_dark(target_img: Fits, dark_img: Fits):
         Fits object of target image
     dark_img: Fits
         Fits object of dark image
+    output_path: str, optional
+        Path for the resulting subtraction
 
     return
     ------
@@ -59,8 +97,14 @@ def subtract_dark(target_img: Fits, dark_img: Fits):
         raise BaseException(f"Different image dimensons!\ndark image dimension: {dark_dimension}\ntarget image dimension: {target_dimension}")
     
     target_data = np.subtract(target_data, dark_data)
+
+    # if output path is specified, do as so
+    if (output_path):
+        file_name = target_img.path[target_img.path.rfind("/") + 1:] + "_subdark"   # get file name
+        new_path = output_path + file_name
     
     # the new file will have the same path and named with "_subdark" at the end of it
-    new_path = target_img.path[:len(target_img.path)-5] + "_subdark" + target_img.path[len(target_img.path)-5:] 
+    else:
+        new_path = target_img.path[:len(target_img.path)-5] + "_subdark" + target_img.path[len(target_img.path)-5:] 
 
     return Fits.create_fits(new_path,target_data)

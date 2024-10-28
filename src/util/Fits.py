@@ -68,6 +68,7 @@ class Fits:
         '''
         
         self.hdul.info()
+        print(self.hdul[0].header)
 
     def get_data(self, index: int = 0):
         '''
@@ -169,7 +170,7 @@ class Fits:
         return False
 
     @staticmethod
-    def batch_fits(path: str, type: str):
+    def batch_fits(path: str, type: str = "N/A"):
         '''
         Creates FITS object for every image found in given directory and return a list of FITS objects
 
@@ -177,8 +178,8 @@ class Fits:
         ------
         path: str
             Path to directory with FITS images
-        type: str
-            Type of images to collect
+        type: str, optional
+            Type of images to collect, default assumes that we are pulling everything in the given directory
 
         return
         ------
@@ -190,8 +191,10 @@ class Fits:
 
         if (os.path.isdir(path)):
             for files in os.listdir(path):
-                # find FITS with specified type
-                if (Fits.path_check(path + files) and type == Fits.check_type(path + files)):
+                # 
+                if (Fits.path_check(path + files) and type == "N/A") :
+                    fits_list.append(Fits(path + files))
+                elif (Fits.path_check(path + files) and type == Fits.check_type(path + files)):
                     fits_list.append(Fits(path + files))
 
             print(f"Batch collect found {len(fits_list)} {type} files in {path}")
