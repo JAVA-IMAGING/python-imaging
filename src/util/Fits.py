@@ -31,7 +31,7 @@ class Fits:
             Image type of FITS object
         '''
 
-        return self.hdul[0].header[Constant.HeaderObj.TYPE_KEY]
+        return self.hdul[0].header[Constant.HeaderObj.TYPE_KEY] # this needs to check through list of known keys
     
     
     # TODO: Handle the case when creating a new FITS object from a newly created FITS data is assigned 
