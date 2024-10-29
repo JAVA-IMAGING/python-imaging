@@ -67,12 +67,12 @@ def generate_PNG(file_name: str, red_channel: Fits, green_channel: Fits, blue_ch
     blue_data = np.array(blue_channel.get_data())
     blue_scaled = scale_channel(blue_data, np.min(blue_data), np.max(blue_data))
 
-    rgb_image = cv2.merge((blue_scaled, green_scaled, red_scaled))
+    rgb_image = cv2.merge((blue_scaled, green_scaled, red_scaled))  # cv2 follows the order BGR, or so I'm told
 
     path = Constant.OUTPUT_PATH + file_name
     cv2.imwrite(path, rgb_image)
     print(f"PNG image generated at {path}")
 
-# This is basically what the original iteration of generate image was doing
+# Wrapper for grayscale images
 def generate_grayscale_PNG(file_name: str, image_data: Fits, boost_factor: float = 1):
     generate_PNG(file_name, image_data, image_data, image_data, boost_factor)
