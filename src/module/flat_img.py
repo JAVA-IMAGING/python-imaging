@@ -55,3 +55,113 @@ def sort_flats_by_color(fits_files: list[Fits]):
     return red_flats, green_flats, blue_flats
 
 
+def extract_rgb(float_data, bayer_pat):
+        """
+        Extracts the red, green, and blue channels from a FITS image based on Bayer pattern.
+        
+        Args:
+            float_data (np.ndarray): 2D array of image data.
+            bayer_pat (str): Bayer pattern (e.g., 'RGGB', 'BGGR').
+
+        Returns:
+            tuple: Three 2D arrays representing red, green, and blue channels.
+        """
+        # Image dimensions
+        image_height, image_width = float_data.shape
+
+        # Initialize red, green, and blue channels
+        red_image = np.zeros((image_height, image_width), dtype=float)
+        green_image = np.zeros((image_height, image_width), dtype=float)
+        blue_image = np.zeros((image_height, image_width), dtype=float)
+
+        # Bayer Pattern Handling
+        bayer_pat = bayer_pat.upper()
+        #bayer_pat = 'RGGB'
+        if bayer_pat == 'RGGB':
+            # Loop through pixels excluding border pixels
+            for row in range(1, image_height - 1):
+                for col in range(1, image_width - 1):
+                    row_rem = row % 2
+                    col_rem = col % 2
+
+                    # Red pixel
+                    if row_rem == 0 and col_rem == 0:
+                        red_image[row, col] = float_data[row, col]
+                        green_image[row, col] = 0.25 * (
+                            float_data[row - 1, col] + float_data[row + 1, col] + 
+                            float_data[row, col - 1] + float_data[row, col + 1]
+                        )
+                        blue_image[row, col] = 0.25 * (
+                            float_data[row - 1, col - 1] + float_data[row - 1, col + 1] + 
+                            float_data[row + 1, col - 1] + float_data[row + 1, col + 1]
+                        )
+                    
+                    # Blue pixel
+                    elif row_rem == 1 and col_rem == 1:
+                        red_image[row, col] = 0.25 * (
+                            float_data[row - 1, col - 1] + float_data[row - 1, col + 1] + 
+                            float_data[row + 1, col - 1] + float_data[row + 1, col + 1]
+                        )
+                        green_image[row, col] = 0.25 * (
+                            float_data[row - 1, col] + float_data[row + 1, col] + 
+                            float_data[row, col - 1] + float_data[row, col + 1]
+                        )
+                        blue_image[row, col] = float_data[row, col]
+
+                    # Green pixels
+                    elif row_rem == 0 and col_rem == 1:
+                        red_image[row, col] = 0.5 * (float_data[row, col - 1] + float_data[row, col + 1])
+                        green_image[row, col] = float_data[row, col]
+                        blue_image[row, col] = 0.5 * (float_data[row - 1, col] + float_data[row + 1, col])
+
+                    elif row_rem == 1 and col_rem == 0:
+                        red_image[row, col] = 0.5 * (float_data[row - 1, col] + float_data[row + 1, col])
+                        green_image[row, col] = float_data[row, col]
+                        blue_image[row, col] = 0.5 * (float_data[row, col - 1] + float_data[row, col + 1])
+
+        elif bayer_pat == 'BGGR':
+            # Loop through pixels excluding border pixels
+            for row in range(1, image_height - 1):
+                for col in range(1, image_width - 1):
+                    row_rem = row % 2
+                    col_rem = col % 2
+
+                    # Blue pixel
+                    if row_rem == 0 and col_rem == 0:
+                        blue_image[row, col] = float_data[row, col]
+                        green_image[row, col] = 0.25 * (
+                            float_data[row - 1, col] + float_data[row + 1, col] + 
+                            float_data[row, col - 1] + float_data[row, col + 1]
+                        )
+                        red_image[row, col] = 0.25 * (
+                            float_data[row - 1, col - 1] + float_data[row - 1, col + 1] + 
+                            float_data[row + 1, col - 1] + float_data[row + 1, col + 1]
+                        )
+
+                    # Red pixel
+                    elif row_rem == 1 and col_rem == 1:
+                        red_image[row, col] = float_data[row, col]
+                        green_image[row, col] = 0.25 * (
+                            float_data[row - 1, col] + float_data[row + 1, col] + 
+                            float_data[row, col - 1] + float_data[row, col + 1]
+                        )
+                        blue_image[row, col] = 0.25 * (
+                            float_data[row - 1, col - 1] + float_data[row - 1, col + 1] + 
+                            float_data[row + 1, col - 1] + float_data[row + 1, col + 1]
+                        )
+
+                    # Green pixels
+                    elif row_rem == 0 and col_rem == 1:
+                        blue_image[row, col] = 0.5 * (float_data[row, col - 1] + float_data[row, col + 1])
+                        green_image[row, col] = float_data[row, col]
+                        red_image[row, col] = 0.5 * (float_data[row - 1, col] + float_data[row + 1, col])
+
+                    elif row_rem == 1 and col_rem == 0:
+                        blue_image[row, col] = 0.5 * (float_data[row - 1, col] + float_data[row + 1, col])
+                        green_image[row, col] = float_data[row, col]
+                        red_image[row, col] = 0.5 * (float_data[row, col - 1] + float_data[row, col + 1])
+        else:
+            raise ValueError("Invalid Bayer Pattern")
+
+        return red_image, green_image, blue_image
+    

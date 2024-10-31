@@ -108,3 +108,51 @@ def subtract_fits(target_img: Fits, dark_img: Fits, output_path: str = None):
         new_path = target_img.path[:len(target_img.path)-5] + "_subdark" + target_img.path[len(target_img.path)-5:] 
 
     return Fits.create_fits(new_path,target_data)
+
+def divide_fits(target_img: Fits, flat_img: Fits, output_path: str = None):
+    '''
+    Divide target FITS image by flat FITS image
+
+    params
+    ------
+    target_img: Fits
+        Fits object of target image
+    flat_img: Fits
+        Fits object of flat image
+    output_path: str, optional
+        Path for the resulting division
+
+    return
+    ------
+    Fits
+        new Fits object of resulting division
+    '''
+
+    flat_data = np.array(flat_img.get_data())
+    target_data = np.array(target_img.get_data())
+
+    flat_dimension = (flat_data.shape[0], flat_data.shape[1])
+    target_dimension = (target_data.shape[0], target_data.shape[1])
+
+    # Ensure same image dimensions
+    if flat_dimension != target_dimension:
+        raise ValueError(f"Different image dimensions!\nFlat image dimension: {flat_dimension}\nTarget image dimension: {target_dimension}")
+
+    # Avoid division by zero by replacing zeros in the flat image with NaNs
+    flat_data[flat_data == 0] = np.nan
+
+    # Perform the division
+    divided_data = np.divide(target_data, flat_data)
+
+    # Replace NaNs resulting from division by zero with zeros
+    divided_data = np.nan_to_num(divided_data)
+
+    # If output path is specified, do as so
+    if output_path:
+        file_name = target_img.path[target_img.path.rfind("/") + 1:] + "_divflat"  # get file name
+        new_path = output_path + file_name
+    else:
+        # The new file will have the same path and be named with "_divflat" at the end of it
+        new_path = target_img.path[:len(target_img.path)-5] + "_divflat" + target_img.path[len(target_img.path)-5:]
+
+    return Fits.create_fits(new_path, divided_data)
