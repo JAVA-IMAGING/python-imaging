@@ -1,5 +1,6 @@
 from astropy.io import fits
 from src.util.Constant import *
+import numpy as np
 import os
 
 
@@ -88,6 +89,22 @@ class Fits:
         if (index < 0):
             raise IndexError("Invalid negative index")
         return self.hdul[index].data
+    
+    def set_data(self, data: np.ndarray, index: int = 0):
+        '''
+        Set new data for a specified HDU in the FITS file.
+
+        params
+        ------
+        data: np.ndarray
+            New data array to set in the FITS file.
+        index: int, optional
+            The index of the HDU to modify. Default is 0 (primary HDU).
+        '''
+        if index < 0 or index >= len(self.hdul):
+            raise IndexError(f"Invalid HDU index {index}.")
+        self.hdul[index].data = data
+        print(f"Data successfully set for HDU index {index} in FITS file.")
     
     def write_to_disk(self, overwrite: bool = True):
         '''
@@ -202,3 +219,6 @@ class Fits:
             return fits_list
         else:
             raise NotADirectoryError(f"Provided path {path} is not a directory")
+
+
+    
