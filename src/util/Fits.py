@@ -36,7 +36,7 @@ class Fits:
     
     
     # TODO: Handle the case when creating a new FITS object from a newly created FITS data is assigned 
-    #       to existing path. For now, just dont't be dumb and make sure the path is for its own.
+    #       to an existing path. For now, just dont't be dumb and make sure the path is for its own.
     def fits_set(self, path: str, hdu: fits.PrimaryHDU = None):
         '''
         Create Fits object from given path
@@ -70,6 +70,18 @@ class Fits:
         
         self.hdul.info()
         print(self.hdul[0].header)
+
+    def get_bayer(self):
+        '''
+        get bayer pattern
+        '''
+
+        header = self.hdul[0].header
+
+        if header.get(Constant.HeaderObj.BAYER_KEY) is not None:
+            return header[Constant.HeaderObj.BAYER_KEY]
+        
+        raise ValueError(f"{Constant.HeaderObj.BAYER_KEY} not found in FITS header.")
 
     def get_data(self, index: int = 0):
         '''
@@ -129,7 +141,7 @@ class Fits:
         path: str
             Path to where FITS is to be written to
         data: list
-            List of data that will be storedi in this file
+            List of data that will be stored in this file
         
         return
         ------

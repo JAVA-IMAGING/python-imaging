@@ -1,6 +1,7 @@
 # tests can go here, or not doesn't really matter
 from src.module import *
 from src.util import *
+from src.util import Fits_Helpers
 
 def test_Fits():
     # check HDUL info function
@@ -96,14 +97,26 @@ def test_teddy():
     # target_subdark.write_to_disk()
     # generate_img(target_subdark)
 
-    path = Constant.RESOURCE_PATH + "fits/"
-    dark_list = Fits.batch_fits(path, Constant.HeaderObj.DARK_IMG)
+    # path = Constant.RESOURCE_PATH + "fits/"
+    # dark_list = Fits.batch_fits(path, Constant.HeaderObj.DARK_IMG)
 
-    mean_dark = mean_stack_fits(dark_list, Constant.DARK_PATH + "mean_dark.fits")
-    median_dark = median_stack_fits(dark_list, Constant.DARK_PATH + "median_dark.fits")
+    # mean_dark = mean_stack_fits(dark_list, Constant.DARK_PATH + "mean_dark.fits")
+    # median_dark = median_stack_fits(dark_list, Constant.DARK_PATH + "median_dark.fits")
 
-    generate_img(mean_dark, 100)
-    generate_img(median_dark, 100)
+    # generate_img(mean_dark, 100)
+    # generate_img(median_dark, 100)
+
+    test = Fits(r"C:\Users\bloon\Desktop\python-imaging\resource\actual_images\flat-5sheets\no_flip\IMG_0005.fits")
+    print(test.get_bayer())
+
+    red_channel = Constant.FLAT_PATH + "red_channel.fits"
+    green_channel = Constant.FLAT_PATH + "green_channel.fits"
+    blue_channel = Constant.FLAT_PATH + "blue_channel.fits"
+
+    result = Fits_Helpers.extract_rgb_from_fits(test, red_channel, green_channel, blue_channel)
+
+    for channels in result:
+        print("HADIR")
 
     pass
 

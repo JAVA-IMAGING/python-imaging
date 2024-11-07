@@ -1,4 +1,5 @@
 from src.module import *
+from src.module import flat_img
 from src.util import *
 import numpy as np
 import cv2
@@ -23,24 +24,39 @@ def histogram_equalize(image):
     equalized_image = cv2.equalizeHist(normalized_image)
     return equalized_image / 255.0 * np.max(image)  # Rescale to original max range
 
-def extract_rgb_from_fits(fits_path, output_red, output_green, output_blue):
+def extract_rgb_from_fits(fits_img: Fits, output_red, output_green, output_blue):
     """
     Extract RGB channels from a FITS file based on the Bayer pattern and save each as a separate FITS file.
     """
-    with fits.open(fits_path) as hdul:
-        float_data = hdul[0].data.astype(float)
-        header = hdul[0].header
-        #bayer_pat = header.get("BAYERPAT")
-        bayer_pat = 'BGGR'
-        if not bayer_pat:
-            raise ValueError("BAYERPAT not found in FITS header.")
+    
+    data = fits_img.get_data().astype(float)
+    bayer_pat = fits_img.get_bayer()
 
-        # Extract RGB channels based on Bayer pattern
-        red_image, green_image, blue_image = extract_rgb(float_data, bayer_pat)
+    red_image, green_image, blue_image = flat_img.extract_rgb(data, bayer_pat)
         
-        # Save each channel as a FITS file
-        red_fits = Fits.create_fits(output_red, red_image)
-        green_fits = Fits.create_fits(output_green, green_image)
-        blue_fits = Fits.create_fits(output_blue, blue_image)
+    # Save each channel as a FITS file
+    red_fits = Fits.create_fits(output_red, red_image)
+    green_fits = Fits.create_fits(output_green, green_image)
+    blue_fits = Fits.create_fits(output_blue, blue_image)
+    
+    return red_fits, green_fits, blue_fits
 
-        return red_fits, green_fits, blue_fits
+    
+    # with fits.open(fits_img) as hdul:
+    #     float_data = hdul[0].data.astype(float)
+    #     header = hdul[0].header
+    #     #bayer_pat = header.get("BAYERPAT")
+    #     bayer_pat = 'BGGR'
+    #     if not bayer_pat:
+    #         raise ValueError("BAYERPAT not found in FITS header.")
+
+    #     # Extract RGB channels based on Bayer pattern
+    #     red_image, green_image, blue_image = extract_rgb(float_data, bayer_pat)
+        
+    #     # Save each channel as a FITS file
+    #     red_fits = Fits.create_fits(output_red, red_image)
+    #     green_fits = Fits.create_fits(output_green, green_image)
+    #     blue_fits = Fits.create_fits(output_blue, blue_image)
+
+    #     return red_fits, green_fits, blue_fits
+    

@@ -10,6 +10,8 @@ class Constant:
         
         # Not all images use TARGET as reference to type, so for any new keys just put here
         TYPE_KEY = ["TARGET", "OBJECT"]
+
+        BAYER_KEY = "BAYERPAT"
     
 
 
