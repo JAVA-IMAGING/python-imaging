@@ -161,8 +161,12 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# FITS images because they are big
-*.fits
+# FITS folders to exclude
+resource/fits
+resource/actual_images
 
-# output files because they are big
-resource/output/
+# unecessary files for now
+resource/actual_images/dark-25C/dark-25C/._.DS_Store
+resource/actual_images/dark-25C/dark-25C/.DS_Store
+resource/actual_images/dark-25C/dark-25C/params.json
+resource/actual_images/flat-5sheets/flat-5sheets/params.json
