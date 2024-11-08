@@ -1,5 +1,6 @@
 import numpy as np
 from src.util import *
+from scipy.ndimage import convolve
 
 def create_master_flat(images):
     """Create a master flat by median stacking the images."""
@@ -75,8 +76,8 @@ def extract_rgb(float_data, bayer_pat):
         blue_image = np.zeros((image_height, image_width), dtype=float)
 
         # Bayer Pattern Handling
-        bayer_pat = bayer_pat.upper()
-        #bayer_pat = 'RGGB'
+        #bayer_pat = bayer_pat.upper()
+        bayer_pat = 'BGGR'
         if bayer_pat == 'RGGB':
             # Loop through pixels excluding border pixels
             for row in range(1, image_height - 1):
@@ -164,4 +165,67 @@ def extract_rgb(float_data, bayer_pat):
             raise ValueError("Invalid Bayer Pattern")
 
         return red_image, green_image, blue_image
+    
+    
+    
+
+def extract_rgb_optimized(float_data, bayer_pat):
+    """
+    Extracts the red, green, and blue channels from a FITS image based on Bayer pattern using NumPy.
+    
+    Args:
+        float_data (np.ndarray): 2D array of image data.
+        bayer_pat (str): Bayer pattern (e.g., 'RGGB', 'BGGR').
+
+    Returns:
+        tuple: Three 2D arrays representing red, green, and blue channels.
+    """
+    # Image dimensions
+    image_height, image_width = float_data.shape
+
+    # Initialize red, green, and blue channels
+    red_image = np.zeros((image_height, image_width), dtype=float)
+    green_image = np.zeros((image_height, image_width), dtype=float)
+    blue_image = np.zeros((image_height, image_width), dtype=float)
+
+    # Define kernels for averaging neighboring pixels
+    green_kernel = np.array([[0, 1, 0],
+                             [1, 0, 1],
+                             [0, 1, 0]]) * 0.25
+    diag_kernel = np.array([[0.25, 0, 0.25],
+                            [0,    0,  0],
+                            [0.25, 0, 0.25]])
+    #bayer_pat = 'RGGB'
+    # RGGB pattern
+    if bayer_pat == 'RGGB':
+        # Red pixels: every [0::2, 0::2] position
+        red_image[0::2, 0::2] = float_data[0::2, 0::2]
+        
+        # Blue pixels: every [1::2, 1::2] position
+        blue_image[1::2, 1::2] = float_data[1::2, 1::2]
+        
+        # Green pixels
+        green_image[0::2, 1::2] = float_data[0::2, 1::2]  # Green pixels on red row
+        green_image[1::2, 0::2] = float_data[1::2, 0::2]  # Green pixels on blue row
+
+    # BGGR pattern
+    elif bayer_pat == 'BGGR':
+        # Blue pixels: every [0::2, 0::2] position
+        blue_image[0::2, 0::2] = float_data[0::2, 0::2]
+        
+        # Red pixels: every [1::2, 1::2] position
+        red_image[1::2, 1::2] = float_data[1::2, 1::2]
+        
+        # Green pixels
+        green_image[0::2, 1::2] = float_data[0::2, 1::2]  # Green pixels on blue row
+        green_image[1::2, 0::2] = float_data[1::2, 0::2]  # Green pixels on red row
+    else:
+        raise ValueError("Invalid Bayer Pattern")
+    print(red_image)
+    # Apply convolution to get values for neighboring color channels
+    red_image += convolve(float_data, diag_kernel) * (red_image == 0)
+    green_image += convolve(float_data, green_kernel) * (green_image == 0)
+    blue_image += convolve(float_data, diag_kernel) * (blue_image == 0)
+
+    return red_image, green_image, blue_image
     
