@@ -24,6 +24,33 @@ def histogram_equalize(image):
     equalized_image = cv2.equalizeHist(normalized_image)
     return equalized_image / 255.0 * np.max(image)  # Rescale to original max range
 
+def color_equalize(r,g,b):
+    r_mean = np.mean(r)
+    g_mean = np.mean(g)
+    b_mean = np.mean(b)
+
+    r_std = np.std(r)
+    g_std = np.std(g)
+    b_std = np.std(b)
+    
+    green_a = 1
+    green_b = 0
+    
+    blue_a = g_std / b_std
+    blue_b = g_mean - blue_a * b_mean
+    
+    red_a = g_std / r_std
+    red_b = g_mean - red_a * r_mean
+    
+    np.multiply(r,red_a)
+    np.add(r,red_b)
+    
+    np.multiply(g,green_a)
+    np.add(g,green_b)
+    
+    np.multiply(b,blue_a)
+    np.add(b,blue_b)
+    
 def extract_rgb_from_fits(fits_img: Fits, output_red, output_green, output_blue):
     """
     Extract RGB channels from a FITS file based on the Bayer pattern and save each as a separate FITS file.
