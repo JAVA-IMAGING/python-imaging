@@ -2,13 +2,13 @@ from PIL import Image
 import cv2 # switching from Pillow to cv2
 import numpy as np
 
-from src.util.Fits import *
-from src.util.Constant import *
+import Fits
+import Constant
 
 # TODO: This implementation is not accurate. It is better to be given the 
 #       separate channels as arguments to ensure that the datas are correct
 def generate_img(fits_img: Fits, boost_factor: float = 1.0):
-    '''
+    """
     Generate a PNG file from given Fits object and boosting the pixels
 
     params
@@ -17,7 +17,7 @@ def generate_img(fits_img: Fits, boost_factor: float = 1.0):
         Fits object to be converted into PNG image
     boost_factor: float, optional
         Float value to boost the image's contrast
-    '''
+    """
     
     # path to save the image
     slash_idx = fits_img.path.rfind("/")
@@ -45,9 +45,9 @@ def generate_img(fits_img: Fits, boost_factor: float = 1.0):
     print(f"Image saved as {path}")
 
 def generate_PNG(file_name: str, red_channel: Fits, green_channel: Fits, blue_channel: Fits, boost_factor: float = 1):
-    '''
+    """
     jujur cape gw nulis ginian
-    '''
+    """
 
     # helper function
     def scale_channel(data, min_val, max_val):

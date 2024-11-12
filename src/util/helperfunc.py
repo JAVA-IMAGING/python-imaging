@@ -1,30 +1,29 @@
-from src.module import *
-from src.module import flat_img
-from src.util import *
 import numpy as np
 import cv2
-from astropy.io import fits
 
-def resize_fits_data(fits_img: Fits, target_shape):
+from Fits import *
+from src.module import flatprocessing
+
+def resize_fits_data(fits_img: Fits, target_shape: tuple):
     """Resizes FITS image data to the target shape."""
     data = np.array(fits_img.get_data())
     resized_data = cv2.resize(data, (target_shape[1], target_shape[0]))  # OpenCV uses (width, height) format
     fits_img.set_data(resized_data)
     return fits_img
 
-def adjust_gamma(image, gamma=1.0):
+def adjust_gamma(image: list[list[float]], gamma: float=1.0):
     """Adjusts gamma for an image to control brightness."""
     inv_gamma = 1.0 / gamma
     image = image / np.max(image)  # Normalize before gamma correction
     return np.power(image, inv_gamma) * np.max(image)
 
-def histogram_equalize(image):
+def histogram_equalize(image: list[list[float]]):
     """Applies histogram equalization to enhance contrast."""
     normalized_image = (image / np.max(image) * 255).astype(np.uint8)
     equalized_image = cv2.equalizeHist(normalized_image)
     return equalized_image / 255.0 * np.max(image)  # Rescale to original max range
 
-def color_equalize(red,green,blue):
+def color_equalize(red: Fits, green: Fits, blue: Fits):
     r = red.get_data()
     g = green.get_data()
     b = blue.get_data()
@@ -55,20 +54,20 @@ def color_equalize(red,green,blue):
     blue.set_data(np.multiply(b,blue_a))
     blue.set_data(np.add(b,blue_b))
 
-def extract_rgb_from_fits(fits_img: Fits, output_red, output_green, output_blue):
+def extract_rgb_from_fits(fits_img: Fits, output_red: str, output_green: str, output_blue: str):
     """
     Extract RGB channels from a FITS file based on the Bayer pattern and save each as a separate FITS file.
     """
     
     data = fits_img.get_data().astype(float)
-    bayer_pat = fits_img.get_bayer()
+    bayer_pat = fits_img.bayerpat()
 
-    red_image, green_image, blue_image = flat_img.extract_rgb_optimized(data, bayer_pat)
+    red_image, green_image, blue_image = flatprocessing.extract_rgb_optimized(data, bayer_pat)
         
     # Save each channel as a FITS file
-    red_fits = Fits.create_fits(output_red, red_image)
-    green_fits = Fits.create_fits(output_green, green_image)
-    blue_fits = Fits.create_fits(output_blue, blue_image)
+    red_fits = Fits.filecreate(output_red, red_image)
+    green_fits = Fits.filecreate(output_green, green_image)
+    blue_fits = Fits.filecreate(output_blue, blue_image)
     
     return red_fits, green_fits, blue_fits
 
@@ -85,9 +84,9 @@ def extract_rgb_from_fits(fits_img: Fits, output_red, output_green, output_blue)
     #     red_image, green_image, blue_image = extract_rgb(float_data, bayer_pat)
         
     #     # Save each channel as a FITS file
-    #     red_fits = Fits.create_fits(output_red, red_image)
-    #     green_fits = Fits.create_fits(output_green, green_image)
-    #     blue_fits = Fits.create_fits(output_blue, blue_image)
+    #     red_fits = Fits.filecreate(output_red, red_image)
+    #     green_fits = Fits.filecreate(output_green, green_image)
+    #     blue_fits = Fits.filecreate(output_blue, blue_image)
 
     #     return red_fits, green_fits, blue_fits
     

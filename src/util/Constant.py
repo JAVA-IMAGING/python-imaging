@@ -1,7 +1,7 @@
 class Constant:
-    '''
+    """
     Store values of HEADER variables in FITS headers
-    '''
+    """
     class HeaderObj:
         DARK_IMG = "dark"
         FLAT_IMG = "flat"

@@ -1,8 +1,10 @@
 import sys
 import argparse
 
-from src.module import *  
-from src.util import *
+from src.module import darkprocessing, flatprocessing
+from src.util import helperfunc, outputimg
+from src.util.Fits import *
+from src.util.Constant import *
 
 # code for main file goes here
 def main():
@@ -37,25 +39,25 @@ def main():
         print(f"filtering flat frames from directory {args.flt_path}")
 
     # thread this probably
-    dark_frame_list = Fits.batch_fits(dark_path, dt)
-    flat_frame_list = Fits.batch_fits(flat_path, ft)
+    dark_frame_list = Fits.batchload(dark_path, dt)
+    flat_frame_list = Fits.batchload(flat_path, ft)
 
     # ini nih yang bikin lemot
-    medStack_dark = dark_img.median_stack_fits(dark_frame_list, Constant.DARK_PATH + "median_stacked_dark.fits")
-    medStack_flat = dark_img.median_stack_fits(flat_frame_list, Constant.FLAT_PATH + "median_stacked_flat.fits")
+    medStack_dark = darkprocessing.median_stack_fits(dark_frame_list, Constant.DARK_PATH + "median_stacked_dark.fits")
+    medStack_flat = darkprocessing.median_stack_fits(flat_frame_list, Constant.FLAT_PATH + "median_stacked_flat.fits")
 
     target_img = Fits(args.trg_path)
 
     # subtract darks
-    flat_subdark = dark_img.subtract_fits(medStack_flat, medStack_dark, Constant.FLAT_PATH)
-    target_subdark = dark_img.subtract_fits(target_img, medStack_dark, Constant.SCIENCE_PATH)
+    flat_subdark = darkprocessing.subtract_fits(medStack_flat, medStack_dark, Constant.FLAT_PATH)
+    target_subdark = darkprocessing.subtract_fits(target_img, medStack_dark, Constant.SCIENCE_PATH)
 
     # write to disk
     if args.write:
-        medStack_dark.write_to_disk()
-        medStack_flat.write_to_disk()
-        flat_subdark.write_to_disk()
-        target_subdark.write_to_disk()
+        medStack_dark.diskwrite()
+        medStack_flat.diskwrite()
+        flat_subdark.diskwrite()
+        target_subdark.diskwrite()
 
 # run main
 if __name__ == "__main__":
