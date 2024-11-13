@@ -3,8 +3,8 @@ import argparse
 
 from src.module import darkprocessing, flatprocessing
 from src.util import helperfunc, outputimg
-from src.util.Fits import *
-from src.util.Constant import *
+from src.util.Fits import Fits
+from src.util.Constant import Constant
 
 # code for main file goes here
 def main():

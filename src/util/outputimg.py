@@ -2,8 +2,8 @@ from PIL import Image
 import cv2 # switching from Pillow to cv2
 import numpy as np
 
-import Fits
-import Constant
+from src.util.Fits import *
+from src.util.Constant import *
 
 # TODO: This implementation is not accurate. It is better to be given the 
 #       separate channels as arguments to ensure that the datas are correct

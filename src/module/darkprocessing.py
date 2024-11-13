@@ -21,6 +21,8 @@ def median_stack_fits(fits_files: list[Fits], output_file: str):
 
     # List to store data arrays from FITS files
     image_data = []
+    # Get a copy of header to retain information from original FITS
+    header_copy = fits_files[0].hdul[0].header
 
     # Read each FITS file and append the data to the list
     for file in fits_files:
@@ -30,7 +32,7 @@ def median_stack_fits(fits_files: list[Fits], output_file: str):
     stacked_median = np.median(np.array(image_data), axis=0)
 
     # Return new Fits object with the calculated data
-    return Fits.filecreate(output_file, stacked_median)
+    return Fits.filecreate(output_file, stacked_median, header_copy)
 
 
 def mean_stack_fits(fits_files: list[Fits], output_file: str):
@@ -51,6 +53,8 @@ def mean_stack_fits(fits_files: list[Fits], output_file: str):
 
     # List to store data arrays from FITS files
     image_data = []
+    # Get a copy of header to retain information from original FITS
+    header_copy = fits_files[0].hdul[0].header
 
     # Read each FITS file and append the data to the list
     for file in fits_files:
@@ -64,10 +68,10 @@ def mean_stack_fits(fits_files: list[Fits], output_file: str):
     masked_data = np.where(mask, image_data, np.nan)  # this was what Elaine meant by using mask
     mean_masked = np.nanmean(masked_data, axis=0)
 
-    return Fits.filecreate(output_file, mean_masked)
+    return Fits.filecreate(output_file, mean_masked, header_copy)
 
 
-def subtract_fits(target_img: Fits, darkprocessing: Fits, output_path: str = None):
+def subtract_fits(target_img: Fits, darkprocessing: Fits, output_path: str=None):
     """
     Subtract master dark from target FITS image
 
@@ -85,6 +89,9 @@ def subtract_fits(target_img: Fits, darkprocessing: Fits, output_path: str = Non
     Fits
         new Fits object of resulting subtraction
     """
+
+    # Get a copy of header to retain information from original FITS
+    header_copy = target_img[0].hdul[0].header
 
     dark_data = np.array(darkprocessing.get_data())
     target_data = np.array(target_img.get_data())
@@ -109,4 +116,4 @@ def subtract_fits(target_img: Fits, darkprocessing: Fits, output_path: str = Non
     else:
         new_path = target_img.path[:len(target_img.path) - 5] + "_subdark.fits"
 
-    return Fits.filecreate(new_path, target_data)
+    return Fits.filecreate(new_path, target_data, header_copy)

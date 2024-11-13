@@ -1,17 +1,19 @@
 import numpy as np
 from scipy.ndimage import convolve
 
-from src.util.Fits import Fits
+from src.util.Fits import *
 
-def normalize_master_flat(master_flat, output_file):
-    """Normalize the master flat by dividing it by its median."""
+def normalize_fits(fits, output_file):
+    """
+    Normalize the master flat by dividing it by its median.
+    """
     
-    median_master_flat = np.median(master_flat)
+    median_master_flat = np.median(fits)
 
-    normalized_master_flat = master_flat / median_master_flat
+    normalized_master_flat = fits / median_master_flat
     return Fits.filecreate(output_file, normalized_master_flat)
 
-def divide_fits(target_img: Fits, flat_img: Fits, output_path: str = None):
+def divide_fits(target_img: Fits, flat_img: Fits, output_path: str=None):
     """
     Divide target FITS image by flat FITS image
 
@@ -114,8 +116,9 @@ def extract_rgb(float_data, bayer_pat):
         blue_image = np.zeros((image_height, image_width), dtype=float)
 
         # Bayer Pattern Handling
-        #bayer_pat = bayer_pat.upper()
-        bayer_pat = 'BGGR'
+        bayer_pat = bayer_pat.upper()
+        # bayer_pat = 'BGGR'
+        
         if bayer_pat == 'RGGB':
             # Loop through pixels excluding border pixels
             for row in range(1, image_height - 1):

@@ -20,4 +20,4 @@ So far, the image processing goes as follows:
 
 Extra info that might be helpful:
 
-- The actual dark frames we've been given comes with a Bayer pattern. So the subtraction can get more complicated since it will be done per color channel.
+- The actual dark frames we've been given comes with a Bayer pattern. So the subtraction can get more complicated since it will be done per color channel if it doesn't match the target image to be subtracted from.

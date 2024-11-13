@@ -1,6 +1,8 @@
 # tests can go here, or not doesn't really matter
 from src.module import darkprocessing, flatprocessing
-from src.util import helperfunc, Fits, Constant, outputimg
+from src.util.Fits import *
+from src.util.Constant import *
+from src.util import helperfunc, outputimg
 
 def test_Fits():
     # check HDUL info function
@@ -39,7 +41,6 @@ def test_darkprocessing():
 def test_generate_img():
     path = r"E:\IPRO Images\2023-05-23_04-03-47_observation_M101\02-images-adjust-focus\img-0001r.fits"
     img_test = Fits(path)
-    outputimg(img_test)
 
 def test_batch_load():
     path1 = Constant.RESOURCE_PATH + "fits/"
@@ -78,45 +79,19 @@ def test_actual_processing():
     # generate_img(subtracted_image)
     # generate_img(master_dark)
 
-def test_teddy():
-    # dark_list = Fits.batchload(r"E:/IPRO Images/expert-mode/dark-25C/no_flip/")
+def random_test():
+    path = r"resource\dark 1 sec\no_flip"
+    batch = Fits.batchload(path)
+    print(batch[0].bayerpat())
+    print(batch[0].get_data())
 
-    # master_dark_path = Constant.DARK_PATH + "master_dark.fits"
-    # master_dark = median_stack_fits(dark_list, master_dark_path)
-    # print(f"master dark data:\n{master_dark.get_data()}\n")
+    fp = r"resource\dark 1 sec\no_flip\IMG_0001.fits"
+    # print(os.path.isfile(fp))
+    # print(fp.endswith(".fits"))
 
-    # target_img = Fits(r"E:\IPRO Images\2023-05-23_04-03-47_observation_M101\01-images-initial\img-0002r.fits")
-    # print(f"target image data:\n{target_img.get_data()}\n")
-    # target_img.fits_hdul_info()
-    # generate_img(target_img)
-
-    # target_subdark = darkprocessing.subtract_fits(target_img, master_dark, Constant.OUTPUT_PATH)
-    # print(f"subtracted data:\n{target_subdark.get_data()}\n")
-
-    # target_subdark.diskwrite()
-    # generate_img(target_subdark)
-
-    # path = Constant.RESOURCE_PATH + "fits/"
-    # dark_list = Fits.batchload(path, Constant.HeaderObj.DARK_IMG)
-
-    # mean_dark = mean_stack_fits(dark_list, Constant.DARK_PATH + "mean_dark.fits")
-    # median_dark = median_stack_fits(dark_list, Constant.DARK_PATH + "median_dark.fits")
-
-    # generate_img(mean_dark, 100)
-    # generate_img(median_dark, 100)
-
-    test = Fits(r"C:\Users\bloon\Desktop\python-imaging\resource\actual_images\flat-5sheets\no_flip\IMG_0005.fits")
-    print(test.bayerpat())
-
-    red_channel = Constant.FLAT_PATH + "red_channel.fits"
-    green_channel = Constant.FLAT_PATH + "green_channel.fits"
-    blue_channel = Constant.FLAT_PATH + "blue_channel.fits"
-
-    result = helperfunc.extract_rgb_from_fits(test, red_channel, green_channel, blue_channel)
-
-    for channels in result:
-        print("HADIR")
-
+    median = darkprocessing.median_stack_fits(batch, Constant.DARK_PATH + "ngentot.fits")
+    print(median.bayerpat())
+    print(median.get_data())
     pass
 
 if __name__ == "__main__":
@@ -125,4 +100,4 @@ if __name__ == "__main__":
     # test_generate_img()
     # test_batch_load()
     # test_actual_processing()
-    test_teddy()
+    random_test()

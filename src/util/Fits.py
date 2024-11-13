@@ -2,7 +2,7 @@ from astropy.io import fits
 import numpy as np
 import os
 
-from Constant import *
+from src.util.Constant import *
 
 class Fits:
     """
@@ -14,7 +14,7 @@ class Fits:
     implement lazy-loading.
     """
     
-    def __init__(self, path: str = None):
+    def __init__(self, path: str=None):
         self.path = None
         self.hdul = None
         
@@ -23,7 +23,7 @@ class Fits:
     
     # TODO: Handle the case when creating a new FITS object from a newly created FITS data is assigned 
     #       to an existing path. For now, just dont't be dumb and make sure the path is for its own.
-    def set(self, path: str, hdu: fits.PrimaryHDU = None):
+    def set(self, path: str, hdu: fits.PrimaryHDU=None):
         """
         Create Fits object from given path
 
@@ -88,7 +88,7 @@ class Fits:
             raise IndexError("Invalid negative index")
         return self.hdul[index].data
     
-    def set_data(self, data: np.ndarray, index: int = 0):
+    def set_data(self, data: np.ndarray, index: int=0):
         """
         Set new data for a specified HDU in the FITS file.
 
@@ -119,7 +119,7 @@ class Fits:
         print(f"FITS file succesfully written to {self.path}")
 
     @staticmethod
-    def filecreate(path: str, data: list):
+    def filecreate(path: str, data: list, header: fits.Header=None):
         """
         Static method to write data into new FITS file or overwrite existing FITS file given in path
 
@@ -129,6 +129,8 @@ class Fits:
             Path to where FITS is to be written to
         data: list
             List of data that will be stored in this file
+        header: fits.Header
+            Header of a FITS file with information to be carried over
         
         return
         ------
@@ -137,7 +139,7 @@ class Fits:
         """
         
         new_obj = Fits()
-        new_obj.set(path, fits.PrimaryHDU(data=data))
+        new_obj.set(path, fits.PrimaryHDU(data=data, header=header))
         return new_obj
 
     @staticmethod
@@ -186,7 +188,7 @@ class Fits:
         return False
 
     @staticmethod
-    def batchload(path: str, type: str = "N/A"):
+    def batchload(path: str, type: str="N/A"):
         """
         Creates FITS object for every image found in given directory and return a list of FITS objects
 
@@ -203,15 +205,17 @@ class Fits:
             List of Fits objects
         """
 
+        # change to POSIX format for consistency
+        format_path = path.replace("\\", "/")
+
         fits_list = []
 
         if (os.path.isdir(path)):
             for files in os.listdir(path):
-                # 
-                if (Fits.check_path(path + files) and type == "N/A") :
-                    fits_list.append(Fits(path + files))
-                elif (Fits.check_path(path + files) and type == Fits.check_type(path + files)):
-                    fits_list.append(Fits(path + files))
+                if (Fits.check_path(f"{path}/{files}") and type == 'N/A') :
+                    fits_list.append(Fits(f"{path}/{files}"))
+                elif (Fits.check_path(f"{path}/{files}") and type == Fits.check_type(f"{path}/{files}")):
+                    fits_list.append(Fits(f"{path}/{files}"))
 
             print(f"Batch collect found {len(fits_list)} {type} files in {path}")
 

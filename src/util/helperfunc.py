@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-from Fits import *
+from src.util.Fits import *
 from src.module import flatprocessing
 
 def resize_fits_data(fits_img: Fits, target_shape: tuple):
