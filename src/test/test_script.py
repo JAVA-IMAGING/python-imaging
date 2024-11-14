@@ -1,8 +1,14 @@
 # tests can go here, or not doesn't really matter
+import timeit
+
 from src.module import darkprocessing, flatprocessing
 from src.util.Fits import *
 from src.util.Constant import *
 from src.util import helperfunc, outputimg
+
+# returns the time 
+def time():
+    return timeit.default_timer()
 
 def test_Fits():
     # check HDUL info function
@@ -80,18 +86,89 @@ def test_actual_processing():
     # generate_img(master_dark)
 
 def random_test():
-    path = r"resource\dark 1 sec\no_flip"
+    path = r"resource\testfolder\dark 1 sec\no_flip"
     batch = Fits.batchload(path)
-    print(batch[0].bayerpat())
-    print(batch[0].get_data())
+    # print(batch[0].bayerpat())
+    # print(batch[0].get_data())
 
     fp = r"resource\dark 1 sec\no_flip\IMG_0001.fits"
     # print(os.path.isfile(fp))
     # print(fp.endswith(".fits"))
 
     median = darkprocessing.median_stack_fits(batch, Constant.DARK_PATH + "ngentot.fits")
+
+    # sum = 0
+    # for i in range(0, 50):
+    #     start = time()
+    #     median = darkprocessing.median_stack_fits(batch, Constant.DARK_PATH + "ngentot.fits")
+    #     end = time()
+    #     sum = sum + (end - start)
+
+    # print(f"Average runtime: {sum / 50}")
+
     print(median.bayerpat())
-    print(median.get_data())
+    # print(median.get_data())
+    pass
+
+def output_test():
+    darks = Fits.batchload(r"resource\testfolder\dark-25C\no_flip")
+    flats = Fits.batchload(r"resource\testfolder\Flat 4 Sheets no_flip")
+    sci = Fits(r"resource\testfolder\scimage\img-0001r.fits")
+
+    dpath = Constant.DARK_PATH + "dark_medstack.fits"
+    fpath = Constant.FLAT_PATH + "flat_medstack.fits"
+
+    # MEDIAN-STACKING FLATS AND DARKS
+    meddark = darkprocessing.median_stack_fits(darks, dpath)
+    medflat = darkprocessing.median_stack_fits(flats, fpath)
+
+    # DARK FRAME COLOR EXTRACTION FOR PNG IMAGE
+    darkpath_r = Constant.DARK_PATH + "dark_r.fits"
+    darkpath_g = Constant.DARK_PATH + "dark_g.fits"
+    darkpath_b = Constant.DARK_PATH + "dark_b.fits"
+    dark_rgb = helperfunc.extract_rgb_from_fits(meddark, darkpath_r, darkpath_g, darkpath_b)
+    outputimg.generate_PNG("dark_medstack.png", dark_rgb[0], dark_rgb[1], dark_rgb[2])
+
+
+    # FLAT FRAME COLOR EXTRACTION PRE-SUBDARK
+    flatpath_r = Constant.FLAT_PATH + "flat_r.fits"
+    flatpath_g = Constant.FLAT_PATH + "flat_g.fits"
+    flatpath_b = Constant.FLAT_PATH + "flat_b.fits"
+    flat_rgb = helperfunc.extract_rgb_from_fits(medflat, flatpath_r, flatpath_g, flatpath_b)
+    outputimg.generate_PNG("flat_medstack.png", flat_rgb[0], flat_rgb[1], flat_rgb[2])
+
+    # DARK FRAME SUBTRACTION
+    subflat = darkprocessing.subtract_fits(medflat, meddark, overwrite=False)
+
+    # FLAT FRAME COLOR EXTRACTION POST-SUBDARK
+    subflatpath_r = Constant.FLAT_PATH + "subflat_r.fits"
+    subflatpath_g = Constant.FLAT_PATH + "subflat_g.fits"
+    subflatpath_b = Constant.FLAT_PATH + "subflat_b.fits"
+    subflat_rgb = helperfunc.extract_rgb_from_fits(subflat, subflatpath_r, subflatpath_g, subflatpath_b)
+    outputimg.generate_PNG("flat_medstack_subdark.png", subflat_rgb[0], subflat_rgb[1], subflat_rgb[2])
+
+    # NORMALIZING FLATS
+    for channel in subflat_rgb:
+        flatprocessing.normalize_fits(channel)
+
+    # SCIENCE IMAGE COLOR EXTRACTION PRE-SUBDARK
+    scipath_r = Constant.SCIENCE_PATH + "sci_r.fits"
+    scipath_g = Constant.SCIENCE_PATH + "sci_g.fits"
+    scipath_b = Constant.SCIENCE_PATH + "sci_b.fits"
+    sci_rgb = helperfunc.extract_rgb_from_fits(sci, scipath_r, scipath_g, scipath_b)
+    outputimg.generate_PNG("sci_img.png", sci_rgb[0], sci_rgb[1], sci_rgb[2])
+
+    # they dont match bruh 😭🙏
+    print(sci.bayerpat())
+    print(meddark.bayerpat())
+
+    # bismillah ini bener
+    for i in range(0,3):
+        darkprocessing.subtract_fits(sci_rgb[i], dark_rgb[i])
+        flatprocessing.divide_fits(sci_rgb[i], subflat_rgb[i])
+    
+    outputimg.generate_PNG("sci_normalized_subdark.png", sci_rgb[0], sci_rgb[1], sci_rgb[2])
+
     pass
 
 if __name__ == "__main__":
@@ -100,4 +177,5 @@ if __name__ == "__main__":
     # test_generate_img()
     # test_batch_load()
     # test_actual_processing()
-    random_test()
+    # random_test()
+    output_test()

@@ -103,7 +103,7 @@ class Fits:
         if index < 0 or index >= len(self.hdul):
             raise IndexError(f"Invalid HDU index {index}.")
         self.hdul[index].data = data
-        print(f"Data successfully set for HDU index {index} in FITS file.")
+        print(f"Data successfully set for HDU index {index} in FITS file {self.path}.")
     
     def diskwrite(self, overwrite: bool = True):
         """

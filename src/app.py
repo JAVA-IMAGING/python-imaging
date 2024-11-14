@@ -6,7 +6,27 @@ from src.util import helperfunc, outputimg
 from src.util.Fits import Fits
 from src.util.Constant import Constant
 
-# code for main file goes here
+# TODO: Consider using logging to better organize the execution and any errors arising.
+#       For now, the prints serve as our only logs.
+
+# cmd constants, refer here
+# TODO: Choose a better name, it's similar to Constant. Moving it to Constant is prolly a better idea.
+class CONST:
+    # path to store median-stacked frames
+    DARK_MEDSTACK = Constant.DARK_PATH + "median_stacked_dark.fits"
+    FLAT_MEDSTACK = Constant.FLAT_PATH + "median_stacked_flat.fits"
+
+    # path to store color channels extracted from flat frames
+    FLATPATH_R = Constant.FLAT_PATH + "flat_r.fits"
+    FLATPATH_G = Constant.FLAT_PATH + "flat_g.fits"
+    FLATPATH_B = Constant.FLAT_PATH + "flat_b.fits"
+
+    # path to store color channels extracted from target/science image
+    # TODO: make up your mind whether to call it science or target
+    TARGET_R = Constant.SCIENCE_PATH + "sci_r.fits"
+    TARGET_G = Constant.SCIENCE_PATH + "sci_g.fits"
+    TARGET_B = Constant.SCIENCE_PATH + "sci_b.fits"
+
 def main():
     parser = argparse.ArgumentParser()
     
@@ -38,19 +58,21 @@ def main():
         ft = Constant.HeaderObj.FLAT_IMG
         print(f"filtering flat frames from directory {args.flt_path}")
 
-    # thread this probably
     dark_frame_list = Fits.batchload(dark_path, dt)
     flat_frame_list = Fits.batchload(flat_path, ft)
-
-    # ini nih yang bikin lemot
-    medStack_dark = darkprocessing.median_stack_fits(dark_frame_list, Constant.DARK_PATH + "median_stacked_dark.fits")
-    medStack_flat = darkprocessing.median_stack_fits(flat_frame_list, Constant.FLAT_PATH + "median_stacked_flat.fits")
-
     target_img = Fits(args.trg_path)
 
+    # ini nih yang bikin lemot
+    medStack_dark = darkprocessing.median_stack_fits(dark_frame_list, CONST.DARK_MEDSTACK)
+    medStack_flat = darkprocessing.median_stack_fits(flat_frame_list, CONST.FLAT_MEDSTACK)
+
     # subtract darks
-    flat_subdark = darkprocessing.subtract_fits(medStack_flat, medStack_dark, Constant.FLAT_PATH)
-    target_subdark = darkprocessing.subtract_fits(target_img, medStack_dark, Constant.SCIENCE_PATH)
+    flat_subdark = darkprocessing.subtract_fits(medStack_flat, medStack_dark, overwrite=False, output_path=Constant.FLAT_PATH)
+    target_subdark = darkprocessing.subtract_fits(target_img, medStack_dark, overwrite=False, output_path=Constant.SCIENCE_PATH)
+
+    # extract RGB
+    flat_rgb = helperfunc.extract_rgb_from_fits(flat_subdark, CONST.FLATPATH_R, CONST.FLATPATH_G, CONST.FLATPATH_B) # I tried to make this look neat 
+    target_rgb = helperfunc.extract_rgb_from_fits(target_subdark, CONST.TARGET_R, CONST.TARGET_G, CONST.TARGET_B)
 
     # write to disk
     if args.write:
@@ -58,6 +80,12 @@ def main():
         medStack_flat.diskwrite()
         flat_subdark.diskwrite()
         target_subdark.diskwrite()
+
+        for channel in flat_rgb:
+            channel.diskwrite()
+
+        for channel in target_rgb:
+            channel.diskwrite()
 
 # run main
 if __name__ == "__main__":

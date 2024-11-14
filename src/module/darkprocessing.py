@@ -1,6 +1,11 @@
 import numpy as np
+from concurrent.futures import ThreadPoolExecutor
 
 from src.util.Fits import *
+
+def load_fits_data(fits_file):
+    """Helper function to get FITS data from an open FITS object."""
+    return fits_file.get_data()
 
 def median_stack_fits(fits_files: list[Fits], output_file: str):
     """
@@ -19,14 +24,24 @@ def median_stack_fits(fits_files: list[Fits], output_file: str):
         Newly created Fits object with median-stacked data
     """
 
-    # List to store data arrays from FITS files
-    image_data = []
     # Get a copy of header to retain information from original FITS
     header_copy = fits_files[0].hdul[0].header
+
+    # List to store data arrays from FITS files
+    image_data = []
 
     # Read each FITS file and append the data to the list
     for file in fits_files:
         image_data.append(file.get_data())
+
+    # tried threading, kek tai anjing
+    '''
+    with ThreadPoolExecutor() as executor:
+        image_data = list(executor.map(load_fits_data, fits_files))
+
+    # Stack the images and compute the median along the stack axis
+    image_data = np.stack(image_data, axis=0)
+    '''
 
     # Stack the images and compute the median along the stack axis
     stacked_median = np.median(np.array(image_data), axis=0)
@@ -71,7 +86,7 @@ def mean_stack_fits(fits_files: list[Fits], output_file: str):
     return Fits.filecreate(output_file, mean_masked, header_copy)
 
 
-def subtract_fits(target_img: Fits, darkprocessing: Fits, output_path: str=None):
+def subtract_fits(target_img: Fits, dark_img: Fits, overwrite: bool=True, output_path: str=None):
     """
     Subtract master dark from target FITS image
 
@@ -79,7 +94,7 @@ def subtract_fits(target_img: Fits, darkprocessing: Fits, output_path: str=None)
     ------
     target_img: Fits
         Fits object of target image
-    darkprocessing: Fits
+    dark_img: Fits
         Fits object of dark image
     output_path: str, optional
         Path for the resulting subtraction
@@ -90,10 +105,7 @@ def subtract_fits(target_img: Fits, darkprocessing: Fits, output_path: str=None)
         new Fits object of resulting subtraction
     """
 
-    # Get a copy of header to retain information from original FITS
-    header_copy = target_img[0].hdul[0].header
-
-    dark_data = np.array(darkprocessing.get_data())
+    dark_data = np.array(dark_img.get_data())
     target_data = np.array(target_img.get_data())
 
     dark_dimension = (dark_data.shape[0], dark_data.shape[1])
@@ -105,15 +117,21 @@ def subtract_fits(target_img: Fits, darkprocessing: Fits, output_path: str=None)
             f"Different image dimensons!\ndark image dimension: {dark_dimension}\ntarget image dimension: {target_dimension}")
 
     target_data = np.subtract(target_data, dark_data)
+    target_data = np.where(target_data < 0, 0, target_data) # for some reason this fixes the white-washing
 
-    # if output path is specified, do as so
-    if (output_path):
-        file_name = target_img.path[
-                    target_img.path.rfind("/") + 1:len(target_img.path) - 5] + "_subdark.fits"  # get file name
-        new_path = output_path + file_name
-
-    # the new file will have the same path and named with "_subdark" at the end of it
+    if overwrite:
+        target_img.set_data(target_data)
     else:
-        new_path = target_img.path[:len(target_img.path) - 5] + "_subdark.fits"
+        # Get a copy of header to retain information from original FITS
+        header_copy = target_img.hdul[0].header
 
-    return Fits.filecreate(new_path, target_data, header_copy)
+        # if output path is specified, do as so
+        if (output_path):
+            file_name = target_img.path[
+                        target_img.path.rfind("/") + 1:len(target_img.path) - 5] + "_subdark.fits"  # get file name
+            new_path = output_path + file_name
+        # the new file will have the same path and named with "_subdark" at the end of it
+        else:
+            new_path = target_img.path[:len(target_img.path) - 5] + "_subdark.fits"
+
+        return Fits.filecreate(new_path, target_data, header_copy)

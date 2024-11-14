@@ -3,17 +3,24 @@ from scipy.ndimage import convolve
 
 from src.util.Fits import *
 
-def normalize_fits(fits, output_file):
+def normalize_fits(fits: Fits, overwrite: bool=True):
     """
     Normalize the master flat by dividing it by its median.
     """
     
-    median_master_flat = np.median(fits)
+    data = fits.get_data()
 
-    normalized_master_flat = fits / median_master_flat
-    return Fits.filecreate(output_file, normalized_master_flat)
+    median_data = np.median(data)
 
-def divide_fits(target_img: Fits, flat_img: Fits, output_path: str=None):
+    normalized_data = data / median_data
+
+    if overwrite:
+        fits.set_data(normalized_data)
+    else:
+        path = fits.path[:len(path)-5] + "_normalized.fits"
+        return Fits.filecreate(path, normalized_data)
+
+def divide_fits(target_img: Fits, flat_img: Fits, overwrite: bool=True, output_path: str=None):
     """
     Divide target FITS image by flat FITS image
 
@@ -51,15 +58,18 @@ def divide_fits(target_img: Fits, flat_img: Fits, output_path: str=None):
     # Replace NaNs resulting from division by zero with zeros
     divided_data = np.nan_to_num(divided_data)
 
-    # If output path is specified, do as so
-    if output_path:
-        file_name = target_img.path[target_img.path.rfind("/") + 1:len(target_img.path)-5] + "_divflat.fits"  # get file name
-        new_path = output_path + file_name
+    if overwrite:
+        target_img.set_data(divided_data)
     else:
-        # The new file will have the same path and be named with "_divflat" at the end of it
-        new_path = target_img.path[:len(target_img.path)-5] + "_divflat.fits"
+        # If output path is specified, do as so
+        if output_path:
+            file_name = target_img.path[target_img.path.rfind("/") + 1:len(target_img.path)-5] + "_divflat.fits"  # get file name
+            new_path = output_path + file_name
+        else:
+            # The new file will have the same path and be named with "_divflat" at the end of it
+            new_path = target_img.path[:len(target_img.path)-5] + "_divflat.fits"
 
-    return Fits.filecreate(new_path, divided_data)
+        return Fits.filecreate(new_path, divided_data)
 
 def sort_flats_by_color(fits_files: list[Fits]):
     """
@@ -94,7 +104,6 @@ def sort_flats_by_color(fits_files: list[Fits]):
                 blue_flats.append(fits_file)
     
     return red_flats, green_flats, blue_flats
-
 
 def extract_rgb(float_data, bayer_pat):
         """
@@ -205,10 +214,7 @@ def extract_rgb(float_data, bayer_pat):
         else:
             raise ValueError("Invalid Bayer Pattern")
 
-        return red_image, green_image, blue_image
-    
-    
-    
+        return red_image, green_image, blue_image   
 
 def extract_rgb_optimized(float_data, bayer_pat):
     """
@@ -262,7 +268,7 @@ def extract_rgb_optimized(float_data, bayer_pat):
         green_image[1::2, 0::2] = float_data[1::2, 0::2]  # Green pixels on red row
     else:
         raise ValueError("Invalid Bayer Pattern")
-    print(red_image)
+    
     # Apply convolution to get values for neighboring color channels
     red_image += convolve(float_data, diag_kernel) * (red_image == 0)
     green_image += convolve(float_data, green_kernel) * (green_image == 0)

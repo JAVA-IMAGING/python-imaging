@@ -22,7 +22,7 @@ def generate_img(fits_img: Fits, boost_factor: float = 1.0):
     # path to save the image
     slash_idx = fits_img.path.rfind("/")
     filename = fits_img.path[slash_idx + 1:-5]  # this grabs only the filename from the complete path 
-    path = Constant.PNG_PATH + filename + ".png"
+    path = Constant.OUTPUT_PATH + filename + ".png"
 
     # get data from FITS image
     fits_data = np.array(fits_img.get_data())
@@ -47,6 +47,7 @@ def generate_img(fits_img: Fits, boost_factor: float = 1.0):
 def generate_PNG(file_name: str, red_channel: Fits, green_channel: Fits, blue_channel: Fits, boost_factor: float = 1):
     """
     jujur cape gw nulis ginian
+    extra note, ga perlu kasih whole path, just the name
     """
 
     # helper function
