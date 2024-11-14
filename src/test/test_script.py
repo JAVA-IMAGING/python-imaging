@@ -86,28 +86,18 @@ def test_actual_processing():
     # generate_img(master_dark)
 
 def random_test():
-    path = r"resource\testfolder\dark 1 sec\no_flip"
-    batch = Fits.batchload(path)
-    # print(batch[0].bayerpat())
-    # print(batch[0].get_data())
+    dpath = r"resource\dark_images\median_stacked_dark.fits"
+    meddark = Fits(dpath)
+    print(meddark.bayerpat())
 
-    fp = r"resource\dark 1 sec\no_flip\IMG_0001.fits"
-    # print(os.path.isfile(fp))
-    # print(fp.endswith(".fits"))
+    fpath = r"resource\flat_images\median_stacked_flat.fits"
+    medflat = Fits(fpath)
+    print(medflat.bayerpat())
 
-    median = darkprocessing.median_stack_fits(batch, Constant.DARK_PATH + "ngentot.fits")
+    fr_path = r"resource\flat_images\flat_r.fits"
+    merah = Fits(fr_path)
+    print(merah.bayerpat()) # harusnya error
 
-    # sum = 0
-    # for i in range(0, 50):
-    #     start = time()
-    #     median = darkprocessing.median_stack_fits(batch, Constant.DARK_PATH + "ngentot.fits")
-    #     end = time()
-    #     sum = sum + (end - start)
-
-    # print(f"Average runtime: {sum / 50}")
-
-    print(median.bayerpat())
-    # print(median.get_data())
     pass
 
 def output_test():
@@ -177,5 +167,5 @@ if __name__ == "__main__":
     # test_generate_img()
     # test_batch_load()
     # test_actual_processing()
-    # random_test()
-    output_test()
+    random_test()
+    # output_test()
