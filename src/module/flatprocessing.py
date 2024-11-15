@@ -1,7 +1,9 @@
 import numpy as np
+import cv2
 from scipy.ndimage import convolve
 
 from src.util.Fits import *
+from src.util import helperfunc
 
 def normalize_fits(fits: Fits, overwrite: bool=True):
     """
@@ -105,117 +107,6 @@ def sort_flats_by_color(fits_files: list[Fits]):
     
     return red_flats, green_flats, blue_flats
 
-def extract_rgb(float_data, bayer_pat):
-        """
-        Extracts the red, green, and blue channels from a FITS image based on Bayer pattern.
-        
-        Args:
-            float_data (np.ndarray): 2D array of image data.
-            bayer_pat (str): Bayer pattern (e.g., 'RGGB', 'BGGR').
-
-        Returns:
-            tuple: Three 2D arrays representing red, green, and blue channels.
-        """
-        # Image dimensions
-        image_height, image_width = float_data.shape
-
-        # Initialize red, green, and blue channels
-        red_image = np.zeros((image_height, image_width), dtype=float)
-        green_image = np.zeros((image_height, image_width), dtype=float)
-        blue_image = np.zeros((image_height, image_width), dtype=float)
-
-        # Bayer Pattern Handling
-        bayer_pat = bayer_pat.upper()
-        # bayer_pat = 'BGGR'
-        
-        if bayer_pat == 'RGGB':
-            # Loop through pixels excluding border pixels
-            for row in range(1, image_height - 1):
-                for col in range(1, image_width - 1):
-                    row_rem = row % 2
-                    col_rem = col % 2
-
-                    # Red pixel
-                    if row_rem == 0 and col_rem == 0:
-                        red_image[row, col] = float_data[row, col]
-                        green_image[row, col] = 0.25 * (
-                            float_data[row - 1, col] + float_data[row + 1, col] + 
-                            float_data[row, col - 1] + float_data[row, col + 1]
-                        )
-                        blue_image[row, col] = 0.25 * (
-                            float_data[row - 1, col - 1] + float_data[row - 1, col + 1] + 
-                            float_data[row + 1, col - 1] + float_data[row + 1, col + 1]
-                        )
-                    
-                    # Blue pixel
-                    elif row_rem == 1 and col_rem == 1:
-                        red_image[row, col] = 0.25 * (
-                            float_data[row - 1, col - 1] + float_data[row - 1, col + 1] + 
-                            float_data[row + 1, col - 1] + float_data[row + 1, col + 1]
-                        )
-                        green_image[row, col] = 0.25 * (
-                            float_data[row - 1, col] + float_data[row + 1, col] + 
-                            float_data[row, col - 1] + float_data[row, col + 1]
-                        )
-                        blue_image[row, col] = float_data[row, col]
-
-                    # Green pixels
-                    elif row_rem == 0 and col_rem == 1:
-                        red_image[row, col] = 0.5 * (float_data[row, col - 1] + float_data[row, col + 1])
-                        green_image[row, col] = float_data[row, col]
-                        blue_image[row, col] = 0.5 * (float_data[row - 1, col] + float_data[row + 1, col])
-
-                    elif row_rem == 1 and col_rem == 0:
-                        red_image[row, col] = 0.5 * (float_data[row - 1, col] + float_data[row + 1, col])
-                        green_image[row, col] = float_data[row, col]
-                        blue_image[row, col] = 0.5 * (float_data[row, col - 1] + float_data[row, col + 1])
-
-        elif bayer_pat == 'BGGR':
-            # Loop through pixels excluding border pixels
-            for row in range(1, image_height - 1):
-                for col in range(1, image_width - 1):
-                    row_rem = row % 2
-                    col_rem = col % 2
-
-                    # Blue pixel
-                    if row_rem == 0 and col_rem == 0:
-                        blue_image[row, col] = float_data[row, col]
-                        green_image[row, col] = 0.25 * (
-                            float_data[row - 1, col] + float_data[row + 1, col] + 
-                            float_data[row, col - 1] + float_data[row, col + 1]
-                        )
-                        red_image[row, col] = 0.25 * (
-                            float_data[row - 1, col - 1] + float_data[row - 1, col + 1] + 
-                            float_data[row + 1, col - 1] + float_data[row + 1, col + 1]
-                        )
-
-                    # Red pixel
-                    elif row_rem == 1 and col_rem == 1:
-                        red_image[row, col] = float_data[row, col]
-                        green_image[row, col] = 0.25 * (
-                            float_data[row - 1, col] + float_data[row + 1, col] + 
-                            float_data[row, col - 1] + float_data[row, col + 1]
-                        )
-                        blue_image[row, col] = 0.25 * (
-                            float_data[row - 1, col - 1] + float_data[row - 1, col + 1] + 
-                            float_data[row + 1, col - 1] + float_data[row + 1, col + 1]
-                        )
-
-                    # Green pixels
-                    elif row_rem == 0 and col_rem == 1:
-                        blue_image[row, col] = 0.5 * (float_data[row, col - 1] + float_data[row, col + 1])
-                        green_image[row, col] = float_data[row, col]
-                        red_image[row, col] = 0.5 * (float_data[row - 1, col] + float_data[row + 1, col])
-
-                    elif row_rem == 1 and col_rem == 0:
-                        blue_image[row, col] = 0.5 * (float_data[row - 1, col] + float_data[row + 1, col])
-                        green_image[row, col] = float_data[row, col]
-                        red_image[row, col] = 0.5 * (float_data[row, col - 1] + float_data[row, col + 1])
-        else:
-            raise ValueError("Invalid Bayer Pattern")
-
-        return red_image, green_image, blue_image   
-
 def extract_rgb_optimized(float_data, bayer_pat):
     """
     Extracts the red, green, and blue channels from a FITS image based on Bayer pattern using NumPy.
@@ -275,4 +166,67 @@ def extract_rgb_optimized(float_data, bayer_pat):
     blue_image += convolve(float_data, diag_kernel) * (blue_image == 0)
 
     return red_image, green_image, blue_image
+
+
+def extract_rgb_CV2(float_data, bayer_pat):
+    """
+    Extracts the red, green, and blue channels from a FITS image based on Bayer pattern using OpenCV.
+    
+    Args:
+        float_data (np.ndarray): 2D array of image data.
+        bayer_pat (str): Bayer pattern (e.g., 'RGGB', 'BGGR', 'GRBG', 'GBRG').
+
+    Returns:
+        tuple: Three 2D arrays representing red, green, and blue channels.
+    """
+    # Optional: You can normalize the input data before processing
+    # Example: Normalize based on the data's range to avoid clipping or saturation.
+    min_val, max_val = float_data.min(), float_data.max()
+    float_data_scaled = (float_data - min_val) / (max_val - min_val) * 255  # Rescale to 0-255
+    float_data_scaled = np.clip(float_data_scaled, 0, 255).astype(np.uint8)
+
+    # Map Bayer pattern to OpenCV constants
+    if bayer_pat == 'RGGB':
+        bayer_code = cv2.COLOR_BAYER_RG2RGB
+    elif bayer_pat == 'BGGR':
+        bayer_code = cv2.COLOR_BAYER_BG2RGB
+    elif bayer_pat == 'GRBG':
+        bayer_code = cv2.COLOR_BAYER_GR2RGB
+    elif bayer_pat == 'GBRG':
+        bayer_code = cv2.COLOR_BAYER_GB2RGB
+    else:
+        raise ValueError(f"Invalid Bayer Pattern: {bayer_pat}")
+
+    # Apply OpenCV's Bayer demosaicing
+    rgb_image = cv2.cvtColor(float_data_scaled, bayer_code)
+
+    # Calculate luminance (optional)
+    luminance_image = calculate_luminance(rgb_image)
+    
+    # Split the RGB image into individual channels
+    red_image, green_image, blue_image = cv2.split(rgb_image)
+    r,g,b = helperfunc.color_equalize_data(red_image,blue_image,green_image)
+    
+    # Convert channels back to float and scale to match original range
+    red_image = red_image.astype(float) / 255 * (max_val - min_val) + min_val
+    green_image = green_image.astype(float) / 255 * (max_val - min_val) + min_val
+    blue_image = blue_image.astype(float) / 255 * (max_val - min_val) + min_val
+
+    return red_image, green_image, blue_image, luminance_image
+    
+def calculate_luminance(rgb_image):
+    """
+    Calculate the luminance of an RGB image using the Rec. 709 formula.
+
+    Args:
+        rgb_image (np.ndarray): The input RGB image (3-channel).
+
+    Returns:
+        np.ndarray: The luminance image (single channel).
+    """
+    # Apply the Rec. 709 luminance formula
+    luminance = 0.299 * rgb_image[:, :, 0] + 0.587 * rgb_image[:, :, 1] + 0.114 * rgb_image[:, :, 2]
+    # Java code uses 0.222 * R + 0.707 * G + 0.071 * B for this might be better IDRK 
+    return luminance
+
     
