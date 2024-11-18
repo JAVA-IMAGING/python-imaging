@@ -161,11 +161,18 @@ def output_test():
 
     pass
 
+def align_test():
+
+    
+
+    pass
+
 if __name__ == "__main__":
     # test_Fits()
     # test_darkprocessing()
     # test_generate_img()
     # test_batch_load()
     # test_actual_processing()
-    random_test()
+    # random_test()
     # output_test()
+    align_test()

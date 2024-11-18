@@ -70,25 +70,36 @@ def main():
     flat_frame_list = Fits.batchload(flat_path, ft)
     target_img = Fits(target_path)
 
+    # BAYER PATTERN MUST MATCH!!
+    darkpat = dark_frame_list[0].bayerpat()
+    flatpat = flat_frame_list[0].bayerpat()
+    targetpat = target_img.bayerpat()
+    bayermatch = darkpat == flatpat and targetpat == darkpat
+
+    if not bayermatch:
+        raise ValueError("Bayer pattern mismatch!")
+
     # median stack flat and dark frames
     medStack_dark = darkprocessing.median_stack_fits(dark_frame_list, CONST.DARK_MEDSTACK)
     medStack_flat = darkprocessing.median_stack_fits(flat_frame_list, CONST.FLAT_MEDSTACK)
+
+    # TODO: Figure out why subtraction pre-color extraction result in greenish tint
+    # perform dark frame subtraction
+    # darkprocessing.subtract_fits(medStack_flat, medStack_dark)
+    # darkprocessing.subtract_fits(target_img, medStack_dark)
 
     # extract RGB channels
     dark_rgb = helperfunc.extract_rgb_from_fits(medStack_dark, CONST.DARK_R, CONST.DARK_G, CONST.DARK_B)
     flat_rgb = helperfunc.extract_rgb_from_fits(medStack_flat, CONST.FLATPATH_R, CONST.FLATPATH_G, CONST.FLATPATH_B)  
     target_rgb = helperfunc.extract_rgb_from_fits(target_img, CONST.TARGET_R, CONST.TARGET_G, CONST.TARGET_B)
 
-    # TODO: think of a way to avoid this when bayer pattern matches, I CBA rn
     for i in range(0, 3):
-        # subtract dark per channel, will work despite bayer pattern mismatch
+        # subtract dark per channel
         darkprocessing.subtract_fits(flat_rgb[i], dark_rgb[i])
         darkprocessing.subtract_fits(target_rgb[i], dark_rgb[i])
 
-        # normalize flats as well
+        # normalize flats and flat correct
         flatprocessing.normalize_fits(flat_rgb[i])
-
-        # flat correct science
         flatprocessing.divide_fits(target_rgb[i], flat_rgb[i])
 
     # setup image generation
