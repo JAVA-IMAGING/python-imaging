@@ -162,6 +162,9 @@ def output_test():
     pass
 
 def align_test():
+    # setting up
+    boost = 5
+
     meddark = Fits(r"resource\dark_images\median_stacked_dark.fits")
     medflat = Fits(r"resource\flat_images\median_stacked_flat.fits")
 
@@ -171,30 +174,36 @@ def align_test():
 
     sci_list = [sci1, sci2, sci3]
 
+    # subtract raw dark (CHOOSE THIS OR PER CHANNEL)
+    # darkprocessing.subtract_fits(medflat, meddark)
+
     dark_rgb = helperfunc.extract_rgb_from_fits(meddark, Constant.DARK_PATH)
     flat_rgb = helperfunc.extract_rgb_from_fits(medflat, Constant.FLAT_PATH)
 
-    # process flats
+    # subtract dark per channel (CHOOSE THIS OR RAW)
     for i in range(0,3):
         darkprocessing.subtract_fits(flat_rgb[i], dark_rgb[i])
         flatprocessing.normalize_fits(flat_rgb[i])
     
-    # process science
+    # process science 
     for i in range(0, len(sci_list)):
         fp = sci_list[i].path
-        fn = fp[fp.rfind("/") + 1: len(fp) - 5]
+        fn = fp[fp.rfind("/") + 1: len(fp) - 5] # get filename
 
-        # include original filename in tuple of RGBs
+        # subtract raw dark (CHOOSE THIS OR PER CHANNEL)
+        # darkprocessing.subtract_fits(sci_list[i], meddark)
+
         sci_list[i] = helperfunc.extract_rgb_from_fits(sci_list[i], Constant.SCIENCE_PATH) + (fn,)  # tuple is now (r, g, b, fn)
 
         for j in range(0,3):
+            # subtract dark per channel (CHOOSE THIS OR RAW)
             darkprocessing.subtract_fits(sci_list[i][j], dark_rgb[j])
             flatprocessing.divide_fits(sci_list[i][j], flat_rgb[j])
 
-        # outputimg.generate_PNG(sci_list[i][3] + "_pre_align.png", sci_list[i][0], sci_list[i][1], sci_list[i][2], boost_factor=8)
+        outputimg.generate_PNG(sci_list[i][3] + "_pre_align.png", sci_list[i][0], sci_list[i][1], sci_list[i][2], boost_factor=boost)
 
     # remove reference image from list
-    reference_img = sci_list.pop(0)
+    reference_img = sci_list.pop(0) # using first image in list
 
     # get transformation matrix from green channels (cuz they brightest)
     for i in range(0, len(sci_list)):
@@ -207,9 +216,9 @@ def align_test():
             scienceprocessing.align_fits(sci_list[i][j], matrix_t[0])
             print(f"POST-ALIGNMENT SIZE OF IMAGE: {sci_list[i][j].get_data().shape}\n")
 
-            # idk why tf it grew 2 layers 
+            # idk why tf it grew 2 layers P.S. I know now
 
-        outputimg.generate_PNG(sci_list[i][3] + "_post_align.png", sci_list[i][0], sci_list[i][1], sci_list[i][2], boost_factor=8)
+        outputimg.generate_PNG(sci_list[i][3] + "_post_align.png", sci_list[i][0], sci_list[i][1], sci_list[i][2], boost_factor=boost)
 
     pass
 
