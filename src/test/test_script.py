@@ -209,7 +209,7 @@ def align_test():
 
             # idk why tf it grew 2 layers 
 
-        # outputimg.generate_PNG(sci_list[i][3] + "_post_align.png", sci_list[i][0], sci_list[i][1], sci_list[i][2], boost_factor=8)
+        outputimg.generate_PNG(sci_list[i][3] + "_post_align.png", sci_list[i][0], sci_list[i][1], sci_list[i][2], boost_factor=8)
 
     pass
 

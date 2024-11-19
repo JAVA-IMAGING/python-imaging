@@ -22,7 +22,7 @@ def align_fits(target_fits:Fits, matrix_t, overwrite: bool=True, output_path: st
 
     target_data = np.array(target_fits.get_data())
     shape = np.zeros(target_data.shape)
-    transform = astroalign.apply_transform(matrix_t, target_data, shape)
+    transform = astroalign.apply_transform(matrix_t, target_data, shape)[0]
 
     if overwrite:
         target_fits.set_data(transform)
