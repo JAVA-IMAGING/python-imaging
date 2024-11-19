@@ -162,8 +162,15 @@ def output_test():
     pass
 
 def align_test():
+    # set corrections first
+    meddark = Fits(r"resource\dark_images\median_stacked_dark.fits")
+    medflat = Fits(r"resource\flat_images\median_stacked_flat.fits")
 
-    
+    sci1 = Fits(r"resource\testfolder\scimage\img-0001r.fits")
+    sci2 = Fits(r"resource\testfolder\scimage\img-0002r.fits")
+    sci3 = Fits(r"resource\testfolder\scimage\img-0003r.fits")
+
+    sci_list = [sci1, sci2, sci3]
 
     pass
 
