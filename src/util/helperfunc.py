@@ -54,7 +54,7 @@ def color_equalize(red: Fits, green: Fits, blue: Fits):
     blue.set_data(np.multiply(b,blue_a))
     blue.set_data(np.add(b,blue_b))
 
-def extract_rgb_from_fits(fits_img: Fits, output_red: str, output_green: str, output_blue: str):
+def extract_rgb_from_fits(fits_img: Fits, directory: str):
     """
     Extract RGB channels from a FITS file based on the Bayer pattern and save each as a separate FITS file.
     """
@@ -65,28 +65,11 @@ def extract_rgb_from_fits(fits_img: Fits, output_red: str, output_green: str, ou
     red_image, green_image, blue_image = flatprocessing.extract_rgb_optimized(data, bayer_pat)
         
     # Save each channel as a FITS file
-    red_fits = Fits.filecreate(output_red, red_image)
-    green_fits = Fits.filecreate(output_green, green_image)
-    blue_fits = Fits.filecreate(output_blue, blue_image)
+    fn = directory + fits_img.path[fits_img.path.rfind("/") + 1:len(fits_img.path) - 5] # just the filename, without .fits extension
+
+    red_fits = Fits.filecreate(fn + "_r.fits", red_image)
+    green_fits = Fits.filecreate(fn + "_g.fits", green_image)
+    blue_fits = Fits.filecreate(fn + "_b.fits", blue_image)
     
     return red_fits, green_fits, blue_fits
-
-    
-    # with fits.open(fits_img) as hdul:
-    #     float_data = hdul[0].data.astype(float)
-    #     header = hdul[0].header
-    #     #bayer_pat = header.get("BAYERPAT")
-    #     bayer_pat = 'BGGR'
-    #     if not bayer_pat:
-    #         raise ValueError("BAYERPAT not found in FITS header.")
-
-    #     # Extract RGB channels based on Bayer pattern
-    #     red_image, green_image, blue_image = extract_rgb(float_data, bayer_pat)
-        
-    #     # Save each channel as a FITS file
-    #     red_fits = Fits.filecreate(output_red, red_image)
-    #     green_fits = Fits.filecreate(output_green, green_image)
-    #     blue_fits = Fits.filecreate(output_blue, blue_image)
-
-    #     return red_fits, green_fits, blue_fits
     

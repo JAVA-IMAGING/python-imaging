@@ -127,8 +127,7 @@ def subtract_fits(target_img: Fits, dark_img: Fits, overwrite: bool=True, output
 
         # if output path is specified, do as so
         if (output_path):
-            file_name = target_img.path[
-                        target_img.path.rfind("/") + 1:len(target_img.path) - 5] + "_subdark.fits"  # get file name
+            file_name = target_img.path[target_img.path.rfind("/") + 1:len(target_img.path) - 5] + "_subdark.fits"  # get file name
             new_path = output_path + file_name
         # the new file will have the same path and named with "_subdark" at the end of it
         else:
