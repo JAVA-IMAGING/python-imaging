@@ -167,12 +167,7 @@ def align_test():
 
     meddark = Fits(r"resource\dark_images\median_stacked_dark.fits")
     medflat = Fits(r"resource\flat_images\median_stacked_flat.fits")
-
-    sci1 = Fits(r"resource\testfolder\scimage\img-0001r.fits")
-    sci2 = Fits(r"resource\testfolder\scimage\img-0002r.fits")
-    sci3 = Fits(r"resource\testfolder\scimage\img-0003r.fits")
-
-    sci_list = [sci1, sci2, sci3]
+    sci_list = Fits.batchload(r"resource\testfolder\scimage")
 
     # subtract raw dark (CHOOSE THIS OR PER CHANNEL)
     # darkprocessing.subtract_fits(medflat, meddark)
@@ -206,14 +201,20 @@ def align_test():
     reference_img = sci_list.pop(0) # using first image in list
 
     # get transformation matrix from green channels (cuz they brightest)
+    # TODO: Check if this is what's causing the shift of color resulting to a tint
     for i in range(0, len(sci_list)):
         # this is a tuple, actual transformation matrix stored at index 0
         matrix_t = scienceprocessing.find_matrix_t(sci_list[i][1], reference_img[1])
 
-        print("ALIGNING...")
+        print("ALIGNING...\n")
         for j in range(0,3):
             print(f"PRE-ALIGNMENT SIZE OF IMAGE: {sci_list[i][j].get_data().shape}")
+
+            # align per channel, see if this fixes the tint
+            # did jack shit as well
+            # matrix_t = scienceprocessing.find_matrix_t(sci_list[i][j], reference_img[j])
             scienceprocessing.align_fits(sci_list[i][j], matrix_t[0])
+            
             print(f"POST-ALIGNMENT SIZE OF IMAGE: {sci_list[i][j].get_data().shape}\n")
 
             # idk why tf it grew 2 layers P.S. I know now

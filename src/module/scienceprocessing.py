@@ -11,8 +11,8 @@ def find_matrix_t(target_fits: Fits, reference_fits: Fits):
     target_data = np.array(target_fits.get_data())
     reference_data = np.array(reference_fits.get_data())
 
-    # use 3 stddevs to consider star pixels
-    t_matrix = astroalign.find_transform(target_data, reference_data, detection_sigma=3) 
+    # use 4 stddevs to consider star pixels
+    t_matrix = astroalign.find_transform(target_data, reference_data, detection_sigma=4) 
     return t_matrix
 
 def align_fits(target_fits:Fits, matrix_t, overwrite: bool=True, output_path: str=None):
@@ -22,7 +22,7 @@ def align_fits(target_fits:Fits, matrix_t, overwrite: bool=True, output_path: st
 
     target_data = np.array(target_fits.get_data())
     shape = np.zeros(target_data.shape)
-    transform = astroalign.apply_transform(matrix_t, target_data, shape)[0] # index 0 is the actual matrix, no idea what the other one (mask layer or whatever) is for
+    transform = astroalign.apply_transform(matrix_t, target_data, shape, np.median(target_data))[0] # index 0 is the actual matrix, no idea what the other one (mask layer or whatever) is for
 
     if overwrite:
         target_fits.set_data(transform)
