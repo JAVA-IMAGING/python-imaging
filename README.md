@@ -25,6 +25,8 @@ List of packages used in this project can be found [here](./requirements.txt)
 
 ### Installation
 
+_We recommend creating a python environment_
+
 1. Clone the repository
 
     `git clone https://github.com/JAVA-IMAGING/python-imaging.git`
@@ -37,7 +39,12 @@ List of packages used in this project can be found [here](./requirements.txt)
 
     `pip install -r requirements.txt`
 
-4. Build project dependencies
+4. Install PySiril
+    `python -m pip install pysiril-0.0.15-py3-none-any.whl`
+
+    _This is a separate step because the package needs to be downloaded directly from the .whl file within this repository, provided by [Siril](https://gitlab.com/free-astro/pysiril/-/releases)_
+
+5. Build project dependencies
 
     `pip install -e .`
 
