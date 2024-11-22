@@ -93,7 +93,7 @@ def main():
             darkprocessing.subtract_fits(sci_img_list[i][j], dark_rgb[j])   # subtract darks per channel, move to outer loop for raw subtraction
             flatprocessing.divide_fits(sci_img_list[i][j], flat_rgb[j])
 
-        outputimg.generate_PNG(sci_img_list[i][3] + "_pre_align.png", sci_img_list[i][0], sci_img_list[i][1], sci_img_list[i][2], boost_factor=boost)
+        # outputimg.generate_PNG(sci_img_list[i][3] + "_pre_align.png", sci_img_list[i][0], sci_img_list[i][1], sci_img_list[i][2], boost_factor=boost)
 
     # write to disk
     if args.write:

@@ -46,8 +46,20 @@ def generate_img(fits_img: Fits, boost_factor: float = 1.0):
 
 def generate_PNG(file_name: str, red_channel: Fits, green_channel: Fits, blue_channel: Fits, boost_factor: float = 1):
     """
-    jujur cape gw nulis ginian
-    extra note, ga perlu kasih whole path, just the name
+    Generate a full image from given color channel values in the output folder as .png file.
+
+    params
+    ------
+    filename: str
+        The complete file name (with .png) that the output will be written with
+    red_channel: Fits
+        Red channel values as a Fits object
+    green_channel: Fits
+        Green channel values as a Fits object
+    blue_channel: Fits
+        Blue channel values as a Fits object
+    boost_factor: float, optional
+        Float value to multiply the pixels in hopes of bringing out contrast
     """
 
     # helper function
@@ -63,7 +75,6 @@ def generate_PNG(file_name: str, red_channel: Fits, green_channel: Fits, blue_ch
 
     green_data = np.array(green_channel.get_data())
     green_scaled = scale_channel(green_data, np.min(green_data), np.max(green_data),)
-
     
     blue_data = np.array(blue_channel.get_data())
     blue_scaled = scale_channel(blue_data, np.min(blue_data), np.max(blue_data))
@@ -76,4 +87,16 @@ def generate_PNG(file_name: str, red_channel: Fits, green_channel: Fits, blue_ch
 
 # Wrapper for grayscale images
 def generate_grayscale_PNG(file_name: str, image_data: Fits, boost_factor: float = 1):
+    """
+    Generate a full image in gray scale.
+
+    params
+    ------
+    file_name: str
+        The complete file name (with .png) that the output will be written with
+    image_data: Fits
+        Fits object with pixel values to be used for image generation
+    boost_factor: float, optional
+        Float value to multiply the pixels in hopes of bringing out contrast
+    """
     generate_PNG(file_name, image_data, image_data, image_data, boost_factor)

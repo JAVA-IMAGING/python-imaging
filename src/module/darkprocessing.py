@@ -9,7 +9,7 @@ def load_fits_data(fits_file):
 
 def median_stack_fits(fits_files: list[Fits], output_file: str):
     """
-    Create a median-stacked image from a list of FITS images
+    Create a median-stacked image from a list of FITS images.
 
     params
     ------
@@ -96,13 +96,15 @@ def subtract_fits(target_img: Fits, dark_img: Fits, overwrite: bool=True, output
         Fits object of target image
     dark_img: Fits
         Fits object of dark image
+    overwrite: bool, optional
+        Set flag for overwriting existing data with dark-subtracted data
     output_path: str, optional
         Path for the resulting subtraction
 
     return
     ------
-    Fits
-        new Fits object of resulting subtraction
+    Fits | None
+        New Fits object of resulting subtraction, or None when overwrite flag set to true
     """
 
     dark_data = np.array(dark_img.get_data())
@@ -129,6 +131,7 @@ def subtract_fits(target_img: Fits, dark_img: Fits, overwrite: bool=True, output
         if (output_path):
             file_name = target_img.path[target_img.path.rfind("/") + 1:len(target_img.path) - 5] + "_subdark.fits"  # get file name
             new_path = output_path + file_name
+        
         # the new file will have the same path and named with "_subdark" at the end of it
         else:
             new_path = target_img.path[:len(target_img.path) - 5] + "_subdark.fits"

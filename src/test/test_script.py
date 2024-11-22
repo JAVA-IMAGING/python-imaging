@@ -163,7 +163,7 @@ def output_test():
 
 def align_test():
     # setting up
-    boost = 5
+    boost = 7
 
     meddark = Fits(r"resource\dark_images\median_stacked_dark.fits")
     medflat = Fits(r"resource\flat_images\median_stacked_flat.fits")
@@ -174,6 +174,10 @@ def align_test():
 
     dark_rgb = helperfunc.extract_rgb_from_fits(meddark, Constant.DARK_PATH)
     flat_rgb = helperfunc.extract_rgb_from_fits(medflat, Constant.FLAT_PATH)
+
+    # get image for reference
+    # outputimg.generate_PNG("medstack_dark_boosted.png", dark_rgb[0], dark_rgb[1], dark_rgb[2], boost_factor=boost)
+    # outputimg.generate_PNG("meddstack_flat_boosted.png", flat_rgb[0], flat_rgb[1], flat_rgb[2], boost_factor=2)
 
     # subtract dark per channel (CHOOSE THIS OR RAW)
     for i in range(0,3):
@@ -189,13 +193,19 @@ def align_test():
         # darkprocessing.subtract_fits(sci_list[i], meddark)
 
         sci_list[i] = helperfunc.extract_rgb_from_fits(sci_list[i], Constant.SCIENCE_PATH) + (fn,)  # tuple is now (r, g, b, fn)
+        
+        # get image for reference
+        # outputimg.generate_PNG(sci_list[i][3] + "_unpreprocessed.png", sci_list[i][0], sci_list[i][1], sci_list[i][2], boost_factor=5)
 
         for j in range(0,3):
             # subtract dark per channel (CHOOSE THIS OR RAW)
             darkprocessing.subtract_fits(sci_list[i][j], dark_rgb[j])
+            # outputimg.generate_PNG(sci_list[i][3] + "_subdark.png", sci_list[i][0], sci_list[i][1], sci_list[i][2], boost_factor=boost)
+            outputimg.generate_grayscale_PNG("greyscale_preflat.png", sci_list[i][0], boost_factor=30)
             flatprocessing.divide_fits(sci_list[i][j], flat_rgb[j])
-
-        outputimg.generate_PNG(sci_list[i][3] + "_pre_align.png", sci_list[i][0], sci_list[i][1], sci_list[i][2], boost_factor=boost)
+    
+        # outputimg.generate_PNG(sci_list[i][3] + "_prealign.png", sci_list[i][0], sci_list[i][1], sci_list[i][2], boost_factor=boost)
+        outputimg.generate_grayscale_PNG("greyscale_postflat.png", sci_list[i][0], boost_factor=30)
 
     # remove reference image from list
     reference_img = sci_list.pop(0) # using first image in list
@@ -209,18 +219,20 @@ def align_test():
         print("ALIGNING...\n")
         for j in range(0,3):
             print(f"PRE-ALIGNMENT SIZE OF IMAGE: {sci_list[i][j].get_data().shape}")
-
-            # align per channel, see if this fixes the tint
-            # did jack shit as well
             # matrix_t = scienceprocessing.find_matrix_t(sci_list[i][j], reference_img[j])
             scienceprocessing.align_fits(sci_list[i][j], matrix_t[0])
             
             print(f"POST-ALIGNMENT SIZE OF IMAGE: {sci_list[i][j].get_data().shape}\n")
 
-            # idk why tf it grew 2 layers P.S. I know now
+        sci_list[i][0].diskwrite()
+        sci_list[i][1].diskwrite()
+        sci_list[i][2].diskwrite()
+        outputimg.generate_PNG(sci_list[i][3] + "_postalign.png", sci_list[i][0], sci_list[i][1], sci_list[i][2], boost_factor=boost)
 
-        outputimg.generate_PNG(sci_list[i][3] + "_post_align.png", sci_list[i][0], sci_list[i][1], sci_list[i][2], boost_factor=boost)
+    pass
 
+def siril_test():
+    
     pass
 
 if __name__ == "__main__":
@@ -232,3 +244,4 @@ if __name__ == "__main__":
     # random_test()
     # output_test()
     align_test()
+    # siril_test()

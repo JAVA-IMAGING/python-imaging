@@ -32,13 +32,15 @@ def divide_fits(target_img: Fits, flat_img: Fits, overwrite: bool=True, output_p
         Fits object of target image
     flat_img: Fits
         Fits object of flat image
+    overwrite: bool, optional
+        Set flag for overwriting existing data with flat-corrected data
     output_path: str, optional
-        Path for the resulting division
+        Path for the resulting flat correction
 
     return
     ------
-    Fits
-        new Fits object of resulting division
+    Fits | None
+        new Fits object of resulting division, or None when overwrite flag set to true
     """
 
     flat_data = np.array(flat_img.get_data())
@@ -84,7 +86,7 @@ def sort_flats_by_color(fits_files: list[Fits]):
     
     return
     ------
-    tuple(list[Fits], list[Fits], list[Fits])
+    tuple(Fits, Fits, Fits)
         Three lists of FITS objects: red_flats, green_flats, and blue_flats.
     """
     red_flats = []
@@ -112,11 +114,14 @@ def extract_rgb_optimized(float_data, bayer_pat):
     Extracts the red, green, and blue channels from a FITS image based on Bayer pattern using NumPy.
     
     Args:
-        float_data (np.ndarray): 2D array of image data.
-        bayer_pat (str): Bayer pattern (e.g., 'RGGB', 'BGGR').
+        float_data: np.ndarray
+            2D array of image data.
+        bayer_pat: str 
+            Bayer pattern (e.g., 'RGGB', 'BGGR').
 
     Returns:
-        tuple: Three 2D arrays representing red, green, and blue channels.
+        tuple: 
+            Three 2D arrays representing red, green, and blue channels.
     """
     # Image dimensions
     image_height, image_width = float_data.shape

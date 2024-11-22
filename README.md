@@ -51,6 +51,10 @@ _We recommend creating a python environment_
     _This step fixes issues when sibling packages try to import from one another. \
      Consider a project management tool in the future, but this should suffice for now._
 
+_Extra notes_:
+
+If your IDE reports missing imports after performing the above steps, clear your Python cache and reload. We've come across this issue several times when using _**Visual Studio Code**_
+
 ### Usage
 
 1. Navigate to project directory

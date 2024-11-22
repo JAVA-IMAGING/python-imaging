@@ -57,6 +57,18 @@ def color_equalize(red: Fits, green: Fits, blue: Fits):
 def extract_rgb_from_fits(fits_img: Fits, directory: str):
     """
     Extract RGB channels from a FITS file based on the Bayer pattern and save each as a separate FITS file.
+
+    params
+    ------
+    fits_img: Fits
+        Fits image object with valid Bayer pattern listed on the header file
+    directory: str
+        Directory path as string for Fits object
+
+    return
+    ------
+    tuple(Fits, Fits, Fits):
+        Tuple of three Fits objects each representing a color channel (Red, Green, Blue)
     """
     
     data = fits_img.get_data().astype(float)

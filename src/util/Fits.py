@@ -6,7 +6,7 @@ from src.util.Constant import *
 
 class Fits:
     """
-    Class to handle FITS files
+    Class to handle FITS files.
     
     Current implementation opens FITS header upon initialization 
     to avoid repeated open() which in turn improves performance, 
@@ -25,7 +25,7 @@ class Fits:
     #       to an existing path. For now, just dont't be dumb and make sure the path is for its own.
     def set(self, path: str, hdu: fits.PrimaryHDU=None):
         """
-        Create Fits object from given path
+        Create Fits object from given path.
 
         params
         ------
@@ -59,7 +59,12 @@ class Fits:
 
     def bayerpat(self):
         """
-        get bayer pattern
+        Get bayer pattern.
+
+        return
+        ------
+        str
+            Bayer pattern of Fits object
         """
 
         header = self.hdul[0].header
@@ -71,7 +76,7 @@ class Fits:
 
     def get_data(self, index: int = 0):
         """
-        Retrieve data from selected HDU
+        Retrieve data from selected HDU.
 
         params
         ------
@@ -121,7 +126,7 @@ class Fits:
     @staticmethod
     def filecreate(path: str, data: list, header: fits.Header=None):
         """
-        Static method to write data into new FITS file or overwrite existing FITS file given in path
+        Static method to write data into new FITS file or overwrite existing FITS file given in path.
 
         params
         ------
@@ -145,7 +150,7 @@ class Fits:
     @staticmethod
     def check_type(path: str):
         """
-        Method to check image type without making FITS object
+        Method to check image type without making FITS object.
 
         params
         ------
@@ -190,7 +195,7 @@ class Fits:
     @staticmethod
     def batchload(path: str, type: str="N/A"):
         """
-        Creates FITS object for every image found in given directory and return a list of FITS objects
+        Creates FITS object for every image found in given directory and return a list of FITS objects.
 
         params
         ------
