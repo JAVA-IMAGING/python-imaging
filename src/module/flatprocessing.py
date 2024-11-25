@@ -164,7 +164,7 @@ def extract_rgb_optimized(float_data, bayer_pat):
     red_image += convolve(float_data, diag_kernel) * (red_image == 0)
     green_image += convolve(float_data, green_kernel) * (green_image == 0)
     blue_image += convolve(float_data, diag_kernel) * (blue_image == 0)
-
+    
     return red_image, green_image, blue_image
 
 
@@ -204,16 +204,162 @@ def extract_rgb_CV2(float_data, bayer_pat):
     luminance_image = calculate_luminance(rgb_image)
     
     # Split the RGB image into individual channels
-    red_image, green_image, blue_image = cv2.split(rgb_image)
-    r,g,b = helperfunc.color_equalize_data(red_image,blue_image,green_image)
+    blue_image, green_image, red_image = cv2.split(rgb_image)
+    #r,g,b = helperfunc.color_equalize_data(red_image,blue_image,green_image)
     
     # Convert channels back to float and scale to match original range
     red_image = red_image.astype(float) / 255 * (max_val - min_val) + min_val
     green_image = green_image.astype(float) / 255 * (max_val - min_val) + min_val
     blue_image = blue_image.astype(float) / 255 * (max_val - min_val) + min_val
 
-    return red_image, green_image, blue_image, luminance_image
+    return red_image, green_image, blue_image
+
+def extract_rgb(float_data, bayer_pat):
+    """
+    Extract RGB images from Bayer-patterned data using NumPy for efficient processing.
     
+    Parameters:
+        float_data (np.ndarray): 2D numpy array representing the input Bayer-patterned data.
+        bayer_pat (str): Bayer pattern string ('RGGB' or 'BGGR').
+    
+    Returns:
+        tuple: (red_image, green_image, blue_image) as 2D numpy arrays.
+    """
+    if bayer_pat.upper() not in {"RGGB", "BGGR"}:
+        raise ValueError("Invalid Bayer Pattern")
+    
+    # Get the image dimensions
+    image_height, image_width = float_data.shape
+    
+    # Initialize output arrays
+    red_image = np.zeros_like(float_data, dtype=float_data.dtype)
+    green_image = np.zeros_like(float_data, dtype=float_data.dtype)
+    blue_image = np.zeros_like(float_data, dtype=float_data.dtype)
+    
+    # Generate row and column remainder grids
+    rows, cols = np.indices((image_height, image_width))
+    row_remainder = rows % 2
+    col_remainder = cols % 2
+    
+    if bayer_pat.upper() == "RGGB":
+        # Red pixels
+        red_pixels = (row_remainder == 0) & (col_remainder == 0)
+        red_image[red_pixels] = float_data[red_pixels]
+        
+        # Green pixels (case 1 and case 2)
+        green_pixels_case1 = (row_remainder == 0) & (col_remainder == 1)
+        green_pixels_case2 = (row_remainder == 1) & (col_remainder == 0)
+        green_image[green_pixels_case1] = float_data[green_pixels_case1]
+        green_image[green_pixels_case2] = float_data[green_pixels_case2]
+        
+        # Blue pixels
+        blue_pixels = (row_remainder == 1) & (col_remainder == 1)
+        blue_image[blue_pixels] = float_data[blue_pixels]
+        
+        # Calculate neighboring averages
+        green_image[red_pixels] = 0.25 * (
+            np.roll(float_data, -1, axis=0) + np.roll(float_data, 1, axis=0) +
+            np.roll(float_data, -1, axis=1) + np.roll(float_data, 1, axis=1)
+        )[red_pixels]
+        
+        green_image[blue_pixels] = 0.25 * (
+            np.roll(float_data, -1, axis=0) + np.roll(float_data, 1, axis=0) +
+            np.roll(float_data, -1, axis=1) + np.roll(float_data, 1, axis=1)
+        )[blue_pixels]
+        
+        blue_image[red_pixels] = 0.25 * (
+            np.roll(np.roll(float_data, -1, axis=0), -1, axis=1) +
+            np.roll(np.roll(float_data, -1, axis=0), 1, axis=1) +
+            np.roll(np.roll(float_data, 1, axis=0), -1, axis=1) +
+            np.roll(np.roll(float_data, 1, axis=0), 1, axis=1)
+        )[red_pixels]
+        
+        red_image[blue_pixels] = 0.25 * (
+            np.roll(np.roll(float_data, -1, axis=0), -1, axis=1) +
+            np.roll(np.roll(float_data, -1, axis=0), 1, axis=1) +
+            np.roll(np.roll(float_data, 1, axis=0), -1, axis=1) +
+            np.roll(np.roll(float_data, 1, axis=0), 1, axis=1)
+        )[blue_pixels]
+        
+        red_image[green_pixels_case1] = 0.5 * (
+            np.roll(float_data, -1, axis=1) + np.roll(float_data, 1, axis=1)
+        )[green_pixels_case1]
+        
+        red_image[green_pixels_case2] = 0.5 * (
+            np.roll(float_data, -1, axis=0) + np.roll(float_data, 1, axis=0)
+        )[green_pixels_case2]
+        
+        blue_image[green_pixels_case1] = 0.5 * (
+            np.roll(float_data, -1, axis=0) + np.roll(float_data, 1, axis=0)
+        )[green_pixels_case1]
+        
+        blue_image[green_pixels_case2] = 0.5 * (
+            np.roll(float_data, -1, axis=1) + np.roll(float_data, 1, axis=1)
+        )[green_pixels_case2]
+    
+    elif bayer_pat.upper() == "BGGR":
+        # Blue pixels
+        blue_pixels = (row_remainder == 0) & (col_remainder == 0)
+        blue_image[blue_pixels] = float_data[blue_pixels]
+
+        # Green pixels (case 1 and case 2)
+        green_pixels_case1 = (row_remainder == 0) & (col_remainder == 1)
+        green_pixels_case2 = (row_remainder == 1) & (col_remainder == 0)
+        green_image[green_pixels_case1] = float_data[green_pixels_case1]
+        green_image[green_pixels_case2] = float_data[green_pixels_case2]
+
+        # Red pixels
+        red_pixels = (row_remainder == 1) & (col_remainder == 1)
+        red_image[red_pixels] = float_data[red_pixels]
+
+        # Interpolate green for blue pixels
+        green_image[blue_pixels] = 0.25 * (
+            np.roll(float_data, -1, axis=0) + np.roll(float_data, 1, axis=0) +
+            np.roll(float_data, -1, axis=1) + np.roll(float_data, 1, axis=1)
+        )[blue_pixels]
+
+        # Interpolate green for red pixels
+        green_image[red_pixels] = 0.25 * (
+            np.roll(float_data, -1, axis=0) + np.roll(float_data, 1, axis=0) +
+            np.roll(float_data, -1, axis=1) + np.roll(float_data, 1, axis=1)
+        )[red_pixels]
+
+        # Interpolate red for blue pixels
+        red_image[blue_pixels] = 0.25 * (
+            np.roll(np.roll(float_data, -1, axis=0), -1, axis=1) +
+            np.roll(np.roll(float_data, -1, axis=0), 1, axis=1) +
+            np.roll(np.roll(float_data, 1, axis=0), -1, axis=1) +
+            np.roll(np.roll(float_data, 1, axis=0), 1, axis=1)
+        )[blue_pixels]
+
+        # Interpolate blue for red pixels
+        blue_image[red_pixels] = 0.25 * (
+            np.roll(np.roll(float_data, -1, axis=0), -1, axis=1) +
+            np.roll(np.roll(float_data, -1, axis=0), 1, axis=1) +
+            np.roll(np.roll(float_data, 1, axis=0), -1, axis=1) +
+            np.roll(np.roll(float_data, 1, axis=0), 1, axis=1)
+        )[red_pixels]
+
+        # Interpolate red and blue for green pixels
+        red_image[green_pixels_case1] = 0.5 * (
+            np.roll(float_data, -1, axis=1) + np.roll(float_data, 1, axis=1)
+        )[green_pixels_case1]
+
+        red_image[green_pixels_case2] = 0.5 * (
+            np.roll(float_data, -1, axis=0) + np.roll(float_data, 1, axis=0)
+        )[green_pixels_case2]
+
+        blue_image[green_pixels_case1] = 0.5 * (
+            np.roll(float_data, -1, axis=0) + np.roll(float_data, 1, axis=0)
+        )[green_pixels_case1]
+
+        blue_image[green_pixels_case2] = 0.5 * (
+            np.roll(float_data, -1, axis=1) + np.roll(float_data, 1, axis=1)
+        )[green_pixels_case2]
+    
+    return red_image, green_image, blue_image
+
+
 def calculate_luminance(rgb_image):
     """
     Calculate the luminance of an RGB image using the Rec. 709 formula.

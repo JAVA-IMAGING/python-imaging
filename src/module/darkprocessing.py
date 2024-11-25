@@ -25,7 +25,8 @@ def median_stack_fits(fits_files: list[Fits], output_file: str):
     """
 
     # Get a copy of header to retain information from original FITS
-    header_copy = fits_files[0].hdul[0].header
+    with fits.open(fits_files[0].path) as hdul:
+        header_copy = hdul[0].header
 
     # List to store data arrays from FITS files
     image_data = []
@@ -48,6 +49,75 @@ def median_stack_fits(fits_files: list[Fits], output_file: str):
 
     # Return new Fits object with the calculated data
     return Fits.filecreate(output_file, stacked_median, header_copy)
+
+
+def median_stack_fits_directory(directory: str, output_file: str, type: str):
+    """
+    Create a median-stacked image from all FITS images of a specified type (red, green, or blue)
+    in a specified directory using a memory-efficient approach.
+
+    params
+    ------
+    directory: str
+        Path to the directory containing FITS files.
+    output_file: str
+        Path to where the output is going to be written.
+    type: str
+        The type of image to process ("red", "green", or "blue").
+
+    return
+    ------
+    None
+        The result is written to `output_file`.
+    """
+    if not os.path.isdir(directory):
+        raise ValueError(f"Provided path '{directory}' is not a valid directory.")
+
+    type_suffix_map = {
+        "red": "_r.fits",
+        "green": "_g.fits",
+        "blue": "_b.fits"
+    }
+    if type not in type_suffix_map:
+        raise ValueError(f"Invalid type '{type}'. Must be one of 'red', 'green', or 'blue'.")
+
+    suffix = type_suffix_map[type]
+
+    fits_files = [os.path.join(directory, file) for file in os.listdir(directory) if file.endswith(suffix)]
+    if not fits_files:
+        raise ValueError(f"No FITS files ending with '{suffix}' found in the directory '{directory}'.")
+
+    header_copy = None
+    image_shape = None
+
+    # Read files one by one to determine shape and header (from the first file)
+    for i, file in enumerate(fits_files):
+        with fits.open(file) as hdul:
+            data = hdul[0].data
+            if header_copy is None:
+                header_copy = hdul[0].header
+                image_shape = data.shape
+            elif data.shape != image_shape:
+                raise ValueError(f"File '{file}' has a different shape from the first FITS file.")
+
+    # Median calculation by blocks
+    temp_data = np.zeros(image_shape, dtype=np.float64)
+    file_count = 0
+
+    for file in fits_files:
+        with fits.open(file) as hdul:
+            temp_data += hdul[0].data
+        file_count += 1
+
+    # Compute final median
+    stacked_median = temp_data / file_count
+
+    # Write the result to a FITS file
+    hdu = fits.PrimaryHDU(data=stacked_median, header=header_copy)
+    hdu.writeto(output_file, overwrite=True)
+
+    print(f"Median-stacked FITS file created at {output_file}.")
+
 
 
 def mean_stack_fits(fits_files: list[Fits], output_file: str):
